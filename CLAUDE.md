@@ -8,6 +8,7 @@ Source of truth: `project: "api-bird"`, `service: "api-bird"`. No plan docs in t
 - Numbers ("issue 4", "plan 001") → `get_*_by_number` first, else match the slug prefix.
 - Open question or unresolved decision → stop and ask via `AskUserQuestion`; write the answer into the doc.
 - Update status in the same turn it changes, and append `**Status:** <New> YYYY-MM-DD. <Reason>`. Plans: `draft → active → done`. Issues: `open → fixed → resolved | closed` (closed needs a rationale).
+- Always create 1 spike ticket for out of scope items.
 
 ## Codebase & Development Conventions
-* **Prototypes:** All prototype, scratchpad and experimental code goes in `api-bird/app/dev/prototypes/` and nowhere else.
+* **Prototypes:** All prototype, scratchpad and experimental code goes in `api-bird/src/app/dev/prototypes/` and nowhere else.
