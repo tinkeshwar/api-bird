@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+/* Tokens mirror local-ai-mcp (AI-Planner) so the two apps read as a family. */
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #e3e6eb;
+  --border-strong: #cfd4dc;
+  --text: #16181d;
+  --muted: #5d6573;
+  --subtle: #8a92a0;
+  --accent: #4f5bd5;
+  --accent-hover: #4350c4;
+  --accent-soft: #eceefc;
+  --accent-text: #3d48b8;
+  --on-accent: #ffffff;
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+  --shadow-lg: 0 4px 12px rgba(16,24,40,.08);
+
+  --c-gray: #6b7280;
+  --c-blue: #2f6fde;
+  --c-green: #1a8a4f;
+  --c-amber: #c08a0a;
+  --c-orange: #dd6b20;
+  --c-red: #e03e52;
+  --c-violet: #8250df;
+  --c-cyan: #0d8a9c;
+  --c-indigo: #4f5bd5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0f13;
+    --surface: #15181e;
+    --surface-2: #1c2028;
+    --border: #262b35;
+    --border-strong: #353b48;
+    --text: #e8eaef;
+    --muted: #a1a8b5;
+    --subtle: #6f7787;
+    --accent: #7c86f2;
+    --accent-hover: #929bf5;
+    --accent-soft: #1f2340;
+    --accent-text: #a9b0f8;
+    --on-accent: #0d0f13;
+    --shadow: 0 1px 2px rgba(0,0,0,.3);
+    --shadow-lg: 0 6px 20px rgba(0,0,0,.4);
+
+    --c-gray: #9aa2b1;
+    --c-blue: #74a7fb;
+    --c-green: #5cd394;
+    --c-amber: #f1c453;
+    --c-orange: #f59a5b;
+    --c-red: #f7768a;
+    --c-violet: #b49afa;
+    --c-cyan: #52cfdf;
+    --c-indigo: #8b93f5;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), system-ui, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
+}
+
+@layer base {
+  *, ::before, ::after { border-color: var(--border); }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3 { font-family: var(--font-display); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  ::selection { background: var(--accent-soft); color: var(--text); }
+}
+
+@utility input {
+  @apply rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-sm text-fg placeholder:text-subtle transition-colors focus:border-accent focus:outline-none;
+}
+
+/* Field caption; wrap the control in it so the label stays visible when the field is filled. */
+@utility label {
+  @apply grid gap-1 text-xs font-medium text-muted;
+}
+
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
+  color: var(--on-accent);
+  &:hover { background: var(--accent-hover); }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2 disabled:opacity-50;
+}
+
+@utility btn-danger {
+  @apply inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
+  color: var(--c-red);
+  border-color: color-mix(in srgb, var(--c-red) 40%, var(--border));
+  &:hover { background: color-mix(in srgb, var(--c-red) 10%, transparent); }
+}
+
+@utility btn-icon {
+  @apply inline-flex size-8 items-center justify-center rounded-lg border border-line-strong text-muted transition-colors hover:bg-surface-2 hover:text-fg disabled:opacity-50;
+}
+
+@utility card {
+  @apply flex min-h-24 flex-col gap-2 rounded-xl border border-line bg-surface p-4;
+  box-shadow: var(--shadow);
+}
+
+/* Tinted pill; set the hue with [--b:var(--c-*)]. */
+@utility badge {
+  color: var(--b);
+  background: color-mix(in srgb, var(--b) 14%, transparent);
+}
+
+/* Native arrow sits flush against the border; draw our own with room on the right. */
+select.input {
+  appearance: none;
+  padding-right: 2rem;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%238a92a0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E")
+    no-repeat right 0.5rem center / 1rem;
+}
+select.input option { background: var(--surface); color: var(--text); }
+
+/* landing (ported from local-ai-mcp) */
+.hero-bg {
+  position: absolute; inset: 0 0 auto; height: 520px; pointer-events: none; z-index: -1;
+  background:
+    radial-gradient(600px 300px at 15% 0%, color-mix(in srgb, var(--c-indigo) 22%, transparent), transparent 70%),
+    radial-gradient(500px 280px at 85% 10%, color-mix(in srgb, var(--c-cyan) 16%, transparent), transparent 70%),
+    radial-gradient(circle, color-mix(in srgb, var(--text) 10%, transparent) 1px, transparent 1px) 0 0 / 22px 22px;
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+.text-gradient {
+  background: linear-gradient(100deg, var(--c-indigo), var(--c-violet) 45%, var(--c-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.project-card {
+  position: relative; overflow: hidden; isolation: isolate;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+/* hue glow in the corner, brightens on hover */
+.project-card::after {
+  content: ''; position: absolute; z-index: -1; width: 220px; height: 220px; top: -110px; right: -80px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hue) 28%, transparent), transparent 70%);
+  opacity: .55; transition: opacity .3s, transform .4s;
+}
+.project-card::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hue), transparent); opacity: 0; transition: opacity .2s;
+}
+.project-card:hover {
+  transform: translateY(-2px); border-color: color-mix(in srgb, var(--hue) 45%, var(--border));
+  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--hue) 45%, transparent);
+}
+.project-card:hover::after { opacity: 1; transform: scale(1.15); }
+.project-card:hover::before { opacity: 1; }
+/* A modal opened from inside a card is still its DOM child: hovering the dialog must not lift the card behind the backdrop. */
+.project-card:has(dialog[open]) { transform: none; }
+.rise { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+  .project-card:hover { transform: none; }
+}
+
+.topbar::after {
+  content: ""; position: absolute; inset: auto 0 -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c-indigo) 55%, transparent) 30%, color-mix(in srgb, var(--c-cyan) 45%, transparent) 70%, transparent);
+}
+
+/* count chip: icon+count, label slides in on hover (ported from local-ai-mcp) */
+.status-chip {
+  position: relative; height: 34px; border-radius: 10px; color: var(--sc);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sc) 12%, var(--surface)), var(--surface));
+  border: 1px solid color-mix(in srgb, var(--sc) 22%, var(--border)); overflow: hidden;
+}
+.status-chip::before {
+  content: ''; position: absolute; inset: 0 25% auto; height: 2px; border-radius: 0 0 2px 2px;
+  background: var(--sc); box-shadow: 0 0 8px var(--sc);
+}
+.status-chip.is-empty { background: var(--surface); border-color: var(--border); color: var(--subtle); }
+.status-chip.is-empty::before { opacity: .25; box-shadow: none; }
+.chip-face, .chip-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), opacity .25s, letter-spacing .4s;
+}
+.chip-label {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .4em;
+  transform: translateY(100%); opacity: 0;
+}
+.status-chip:hover .chip-face { transform: translateY(-100%); opacity: 0; }
+.status-chip:hover .chip-label { transform: none; opacity: 1; letter-spacing: .1em; }
