@@ -5,7 +5,7 @@ import { ProjectIcon } from "@/components/ProjectIcon";
 import { projects } from "@/lib/db";
 import { version } from "../../../package.json";
 
-// Desktop window: airmail stripe, sidebar (window buttons sit in its top row), title bar with crumbs, status bar.
+// Desktop window: full-width title bar (window buttons + crumbs), airmail stripe, sidebar, status bar.
 export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
   await connection();
   // An unreachable DB still renders the shell (and the no-DB /dev page); the status bar says so.
@@ -16,12 +16,18 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
 
   return (
     <div className="flex h-full flex-col">
+      <header className="drag flex h-11 shrink-0 items-center bg-sidebar pr-4 pl-[var(--traffic-inset,1rem)] text-sm">
+        <Link href="/" className="rounded-md px-2 py-1 font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-fg">
+          Projects
+        </Link>
+        {crumb}
+      </header>
       <div className="airmail h-1 shrink-0" aria-hidden />
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-56 shrink-0 flex-col border-r border-line bg-sidebar select-none">
-          <div className="drag flex h-11 shrink-0 items-center gap-2 pr-3 pl-[var(--traffic-inset,0.75rem)]">
+          <div className="flex h-14 shrink-0 items-center px-3">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <img src="/logo.svg" alt="" className="h-8 w-auto shrink-0" />
+              <img src="/logo.svg" alt="" className="h-9 w-auto shrink-0" />
               <span className="whitespace-nowrap">
                 API Bird<sup className="ml-0.5 font-mono text-[9px] font-normal text-subtle"> v{version}</sup>
               </span>
@@ -41,12 +47,6 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="drag flex h-11 shrink-0 items-center border-b border-line px-4 text-sm">
-            <Link href="/" className="rounded-md px-2 py-1 font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-fg">
-              Projects
-            </Link>
-            {crumb}
-          </header>
           <main className="watermark min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto max-w-6xl space-y-6 p-6">{children}</div>
           </main>
