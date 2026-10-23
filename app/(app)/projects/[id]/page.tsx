@@ -5,6 +5,7 @@ import { AddCard } from "@/components/AddCard";
 import { ServiceCard } from "@/components/Cards";
 import { EditServiceModal } from "@/components/EditModals";
 import { ServiceFields } from "@/components/ServiceFields";
+import { VarsPanel } from "@/components/VarsPanel";
 import { endpoints, oid, projects, serviceUrl, services } from "@/lib/db";
 import { METHODS } from "@/lib/methods";
 
@@ -29,6 +30,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[id]"
 
   return (
     <>
+      <VarsPanel projectId={pid} vars={project.vars ?? {}} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((s) => (
           <ServiceCard

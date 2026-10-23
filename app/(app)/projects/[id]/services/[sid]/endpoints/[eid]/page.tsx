@@ -3,7 +3,7 @@ import { deleteEndpoint } from "@/app/actions";
 import { ActionForm } from "@/components/ActionForm";
 import { EndpointWorkbench } from "@/components/EndpointWorkbench";
 import { TrashIcon } from "@/components/Icons";
-import { endpoints, oid, serviceUrl, services } from "@/lib/db";
+import { endpoints, oid, projects, serviceUrl, services } from "@/lib/db";
 
 export default async function EndpointPage({ params }: PageProps<"/projects/[id]/services/[sid]/endpoints/[eid]">) {
   const { sid, eid } = await params;
@@ -13,11 +13,13 @@ export default async function EndpointPage({ params }: PageProps<"/projects/[id]
   if (!ep) notFound();
   const svc = await (await services()).findOne({ _id: ep.serviceId });
   if (!svc) notFound();
+  const project = await (await projects()).findOne({ _id: svc.projectId }, { projection: { vars: 1 } });
 
   return (
     <EndpointWorkbench
       id={eid}
       baseUrl={serviceUrl(svc)}
+      vars={Object.keys(project?.vars ?? {})}
       initial={{
         method: ep.method,
         path: ep.path,

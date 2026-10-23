@@ -4,7 +4,9 @@ import { MongoClient, ObjectId, type Db } from "mongodb";
 
 export type KV = { key: string; value: string };
 
-export type Project = { name: string; icon?: string; createdAt: Date };
+export type Var = { value: string; secret?: boolean };
+
+export type Project = { name: string; icon?: string; vars?: Record<string, Var>; createdAt: Date };
 
 export type Service = {
   projectId: ObjectId;

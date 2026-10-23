@@ -12,6 +12,7 @@ import { KVRows } from "@/components/KVRows";
 import { methodColor } from "@/components/MethodBadge";
 import type { KV } from "@/lib/db";
 import { METHODS } from "@/lib/methods";
+import { refs } from "@/lib/vars";
 
 type Draft = {
   method: string;
@@ -22,8 +23,10 @@ type Draft = {
   body: string;
 };
 
+// {param} but not {{var}}: the {{…}} alternative swallows var refs so they never count as params.
+const PARAM = /\{\{[^}]*\}\}|\{([^{}]+)\}/g;
 const pathParamNames = (path: string) => [
-  ...new Set([...path.matchAll(/\{([^}]+)\}/g)].map((m) => m[1])),
+  ...new Set([...path.matchAll(PARAM)].map((m) => m[1]).filter(Boolean)),
 ];
 const filled = (rows: KV[]) => rows.filter((r) => r.key.trim()).length;
 
@@ -108,6 +111,7 @@ export function EndpointWorkbench({
   id,
   baseUrl,
   initial,
+  vars = [],
   actions,
   run = runEndpoint,
   save = updateEndpoint,
@@ -115,6 +119,7 @@ export function EndpointWorkbench({
   id: string;
   baseUrl: string;
   initial: Draft;
+  vars?: string[]; // names the project defines, to flag unknown {{refs}}
   actions?: React.ReactNode;
   run?: (id: string, o: RunInput) => Promise<RunResult>;
   save?: (prev: Result, fd: FormData) => Promise<Result>;
@@ -166,22 +171,36 @@ export function EndpointWorkbench({
       if (!r.error) setSavedAs(d);
     });
 
-  // Live preview of what Send will hit: params substituted, query appended.
-  const qs = new URLSearchParams(
-    d.query.filter((q) => q.key.trim()).map((q) => [q.key.trim(), q.value]),
-  ).toString();
-  const preview = d.path.split(/(\{[^}]+\})/).map((p, i) =>
-    p.startsWith("{") ? (
-      <span
-        key={i}
-        className={params[p.slice(1, -1)] ? "text-fg" : "text-accent-text"}
-      >
-        {params[p.slice(1, -1)] || p}
-      </span>
-    ) : (
-      p
-    ),
-  );
+  // Live preview of what Send will hit: params substituted, query appended, {{vars}} highlighted
+  // (red when the project doesn't define them). Query shown unencoded so refs stay readable.
+  const qs = d.query
+    .filter((q) => q.key.trim())
+    .map((q) => `${q.key.trim()}=${q.value}`)
+    .join("&");
+  const mark = (text: string) =>
+    text.split(/(\{\{[^}]*\}\}|\{[^{}]+\})/).map((p, i) =>
+      p.startsWith("{{") ? (
+        <span
+          key={i}
+          className={vars.includes(p.slice(2, -2)) ? "text-[var(--c-green)]" : "text-[var(--c-red)]"}
+          title={vars.includes(p.slice(2, -2)) ? "Project variable" : "Not defined in Project variables"}
+        >
+          {p}
+        </span>
+      ) : p.startsWith("{") ? (
+        <span
+          key={i}
+          className={params[p.slice(1, -1)] ? "text-fg" : "text-accent-text"}
+        >
+          {params[p.slice(1, -1)] || p}
+        </span>
+      ) : (
+        p
+      ),
+    );
+  const undefinedVars = refs(
+    [d.path, qs, ...d.headers.flatMap((h) => [h.key, h.value]), hasBody ? d.body : ""].join("\n"),
+  ).filter((n) => !vars.includes(n));
 
   return (
     <div
@@ -222,9 +241,15 @@ export function EndpointWorkbench({
               title={`${baseUrl}${d.path}${qs ? `?${qs}` : ""}`}
             >
               <span className="text-subtle">{baseUrl}</span>
-              <span className="text-fg">{preview}</span>
-              {qs && <span className="text-accent-text">?{qs}</span>}
+              <span className="text-fg">{mark(d.path)}</span>
+              {qs && <span className="text-accent-text">?{mark(qs)}</span>}
             </p>
+            {undefinedVars.length > 0 && (
+              <p className="text-xs text-[var(--c-red)]">
+                Not defined in Project variables:{" "}
+                <span className="font-mono">{undefinedVars.map((n) => `{{${n}}}`).join(", ")}</span>
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {saved.error && (

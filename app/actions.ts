@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { MongoServerError } from "mongodb";
 import { endpoints, normBasePath, oid, projects, serviceUrl, services, type KV } from "@/lib/db";
 import { METHODS, parseOpenApi } from "@/lib/openapi";
+import { fill, VAR_NAME } from "@/lib/vars";
 
 // ponytail: no auth, this is a single-user local tool. Add auth before exposing it on a network,
 // runEndpoint in particular lets any caller make requests from the server.
@@ -67,6 +68,36 @@ export async function deleteProject(_: Result, fd: FormData): Promise<Result> {
   await (await projects()).deleteOne({ _id: id });
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+// ---------- project variables ----------
+
+function readVar(fd: FormData) {
+  const projectId = oid(str(fd, "projectId"));
+  const name = str(fd, "name");
+  if (!projectId) return fail("Project not found");
+  if (!VAR_NAME.test(name)) return fail("Name must start with a letter or _ and use only letters, digits, _ or -");
+  return { projectId, name };
+}
+
+export async function setVar(_: Result, fd: FormData): Promise<Result> {
+  const v = readVar(fd);
+  if ("error" in v) return v;
+  const value = String(fd.get("value") ?? "");
+  const r = await (await projects()).updateOne(
+    { _id: v.projectId },
+    { $set: { [`vars.${v.name}`]: { value, ...(fd.get("secret") && { secret: true }) } } },
+  );
+  if (!r.matchedCount) return fail("Project not found");
+  return done();
+}
+
+export async function deleteVar(_: Result, fd: FormData): Promise<Result> {
+  const v = readVar(fd);
+  if ("error" in v) return v;
+  const r = await (await projects()).updateOne({ _id: v.projectId }, { $unset: { [`vars.${v.name}`]: "" } });
+  if (!r.matchedCount) return fail("Project not found");
+  return done();
 }
 
 // ---------- services ----------
@@ -237,11 +268,22 @@ export async function runEndpoint(endpointId: string, o: RunInput): Promise<RunR
     if (!METHODS.includes(method)) return { error: "Invalid method", durationMs: ms() };
     if (!o.path.startsWith("/")) return { error: "Path must start with /", durationMs: ms() };
 
-    const path = o.path.replace(/\{([^}]+)\}/g, (_, n: string) => encodeURIComponent(o.params[n] ?? ""));
-    const qs = new URLSearchParams(o.query.filter((q) => q.key.trim()).map((q) => [q.key.trim(), q.value])).toString();
+    // {param} path params first ({{var}} refs are skipped), then {{var}} everywhere. Any unresolved ref blocks the send.
+    const vars = (await (await projects()).findOne({ _id: svc.projectId }, { projection: { vars: 1 } }))?.vars ?? {};
+    const missing: string[] = [];
+    const v = (s: string) => {
+      const r = fill(s, vars);
+      missing.push(...r.missing);
+      return r.text;
+    };
+    const path = v(o.path.replace(/\{\{[^}]*\}\}|\{([^{}]+)\}/g, (m, n?: string) => (n ? encodeURIComponent(o.params[n] ?? "") : m)));
+    const kvs = (rows: KV[]) => rows.filter((r) => r.key.trim()).map((r) => [v(r.key.trim()), v(r.value)] as [string, string]);
+    const qs = new URLSearchParams(kvs(o.query)).toString();
+    const headers = kvs(o.headers);
+    const sendBody = method !== "GET" && method !== "HEAD" && o.body ? v(o.body) : undefined;
+    if (missing.length)
+      return { error: `{{${missing[0]}}} has no value. Set it in Project variables or capture it from a login response.`, durationMs: ms() };
     const url = `${serviceUrl(svc)}${path}${qs ? `?${qs}` : ""}`;
-    const headers = o.headers.filter((h) => h.key.trim()).map((h) => [h.key.trim(), h.value] as [string, string]);
-    const sendBody = method !== "GET" && method !== "HEAD" && o.body ? o.body : undefined;
 
     const res = await fetch(url, {
       method,

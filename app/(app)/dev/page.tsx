@@ -12,6 +12,7 @@ import { Modal } from "@/components/Modal";
 import { ProjectFields } from "@/components/ProjectFields";
 import { ServiceFields } from "@/components/ServiceFields";
 import { ServiceHeader } from "@/components/ServiceHeader";
+import { VarsPanel } from "@/components/VarsPanel";
 import { METHODS } from "@/lib/methods";
 
 // UI prototypes with mock data, no DB. Every new component lands here first. Dev only.
@@ -198,6 +199,18 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
         />
       </Section>
 
+      <Section title="Project variables">
+        <p className="text-xs text-muted">Secret values are masked; the eye reveals them. Type “fail” as a name to see the error state.</p>
+        <VarsPanel
+          projectId="dev"
+          vars={{ baseToken: { value: "eyJhbGciOiJIUzI1NiJ9.dev", secret: true }, tenant: { value: "acme" }, "api-key": { value: "k_live_123", secret: true } }}
+          save={mockSave}
+          remove={mockSave}
+        />
+        <p className="text-xs text-muted">Empty project:</p>
+        <VarsPanel projectId="dev" vars={{}} save={mockSave} remove={mockSave} />
+      </Section>
+
       <Section title="Endpoint page: request bar + request/response panels">
         <p className="text-xs text-muted">Set the path to include “fail” for a network error or “missing” for a 404. ⌘↵ sends, ⌘S saves.</p>
         <EndpointWorkbench
@@ -205,12 +218,13 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
           baseUrl="https://invoices.internal:8443/api/v1"
           initial={{
             method: "PATCH",
-            path: "/invoices/{id}",
+            path: "/{{tenant}}/invoices/{id}",
             name: "Update invoice",
-            query: [{ key: "expand", value: "lines" }],
-            headers: [{ key: "Authorization", value: "Bearer •••" }],
+            query: [{ key: "expand", value: "lines" }, { key: "region", value: "{{region}}" }],
+            headers: [{ key: "Authorization", value: "Bearer {{baseToken}}" }],
             body: '{\n  "status": "paid"\n}',
           }}
+          vars={["baseToken", "tenant"]}
           run={mockRun}
           save={mockSave}
           actions={
