@@ -90,7 +90,6 @@ export default async function Home() {
             })}
             empty={
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element -- SVG, nothing for next/image to optimise */}
                 <img src="/logo.svg" alt="" className="h-20 w-auto opacity-80" />
                 <p className="font-medium text-fg">No projects yet</p>
                 <p className="max-w-xs text-sm text-muted">A project groups the services you call and the variables they share.</p>

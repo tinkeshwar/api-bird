@@ -4,7 +4,6 @@ export const hueOf = (name: string) => `var(--c-${HUES[[...name].reduce((s, c) =
 
 export function ProjectIcon({ icon, name, size = 32, hue = hueOf(name) }: { icon?: string; name: string; size?: number; hue?: string }) {
   if (icon) {
-    // eslint-disable-next-line @next/next/no-img-element -- data URL, nothing for next/image to optimise
     return <img src={icon} alt="" width={size} height={size} className="rounded-xl object-cover" style={{ width: size, height: size }} />;
   }
   return (

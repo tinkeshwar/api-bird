@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Airmail palette, shared with electron/setup.html: paper, ink, post-office red and blue. */
+/* Airmail palette, shared with electron/setup.html: paper, ink, post-office red and blue.*/
 :root {
   color-scheme: light dark;
   --bg: #f6f1e7;
@@ -200,29 +200,6 @@ select.input option { background: var(--surface); color: var(--text); }
   background-size: auto, 34rem auto;
 }
 
-/* count chip: icon+count, label slides in on hover (ported from local-ai-mcp) */
-.status-chip {
-  position: relative; height: 34px; border-radius: 10px; color: var(--sc);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sc) 12%, var(--surface)), var(--surface));
-  border: 1px solid color-mix(in srgb, var(--sc) 22%, var(--border)); overflow: hidden;
-}
-.status-chip::before {
-  content: ''; position: absolute; inset: 0 25% auto; height: 2px; border-radius: 0 0 2px 2px;
-  background: var(--sc); box-shadow: 0 0 8px var(--sc);
-}
-.status-chip.is-empty { background: var(--surface); border-color: var(--border); color: var(--subtle); }
-.status-chip.is-empty::before { opacity: .25; box-shadow: none; }
-.chip-face, .chip-label {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 5px;
-  transition: transform .35s cubic-bezier(.2,.7,.2,1), opacity .25s, letter-spacing .4s;
-}
-.chip-label {
-  font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .4em;
-  transform: translateY(100%); opacity: 0;
-}
-.status-chip:hover .chip-face { transform: translateY(-100%); opacity: 0; }
-.status-chip:hover .chip-label { transform: none; opacity: 1; letter-spacing: .1em; }
-
 /* Overview stamps: perforated edge cut by a mask (holes along the rim, solid middle); the wrapper's
    drop-shadow follows the cut edge, which a box-shadow can't. */
 .stamp-wrap { filter: drop-shadow(0 1px 1px rgba(60,45,20,.12)) drop-shadow(0 4px 10px rgba(60,45,20,.08)); }
@@ -235,7 +212,10 @@ select.input option { background: var(--surface); color: var(--text); }
     linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
   transition: transform .3s cubic-bezier(.2,.7,.2,1);
 }
-.stamp-wrap:hover .stamp { transform: rotate(-1.5deg) translateY(-2px); }
+.stamp-wrap:hover .stamp, .envelope:hover .stamp { transform: rotate(-1.5deg) translateY(-2px); }
+.stamp-sm { --r: 3px; }
+.stamp-sm .stamp-face { gap: .3rem; padding: .5rem .6rem; min-width: 4.75rem; text-align: center; }
+.stamp-sm .stamp-face::after { display: none; }
 .stamp-face {
   position: relative; overflow: hidden;
   display: grid; gap: .6rem; padding: .75rem .85rem;
@@ -288,3 +268,24 @@ select.input option { background: var(--surface); color: var(--text); }
   background: color-mix(in srgb, var(--b) 8%, transparent);
   transform: rotate(-8deg);
 }
+
+/* Service tile: paper envelope with the airmail stripe along its top edge. */
+.envelope {
+  position: relative; display: flex; flex-direction: column; gap: 1rem; overflow: hidden;
+  padding: 1.1rem 1rem .85rem; border-radius: .5rem; border: 1px solid var(--border);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--hue) 7%, var(--surface)), var(--surface) 55%);
+  box-shadow: var(--shadow);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.envelope::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: 4px;
+  background: repeating-linear-gradient(-45deg, var(--c-red) 0 10px, transparent 10px 15px, var(--accent) 15px 25px, transparent 25px 30px);
+  opacity: .85;
+}
+.envelope:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--hue) 45%, var(--border));
+  box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--hue) 50%, transparent);
+}
+.envelope:has(dialog[open]) { transform: none; }
+@media (prefers-reduced-motion: reduce) { .envelope:hover { transform: none; } }

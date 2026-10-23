@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { mockCapture, mockLock, mockRemove, mockRename, mockRun, mockSave, mockUncapture } from "@/app/(app)/dev/actions";
 import { ActionForm } from "@/components/ActionForm";
 import { AddCard } from "@/components/AddCard";
-import { ProjectCard, ServiceCard } from "@/components/Cards";
+import { ServiceCard } from "@/components/Cards";
 import { PencilIcon, PlayIcon, PlugIcon, PlusIcon, ServerIcon, SlidersIcon, TrashIcon, UploadIcon } from "@/components/Icons";
 import { footer } from "@/components/EditModals";
 import { EndpointList } from "@/components/EndpointList";
@@ -205,28 +205,6 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
             <Panel title="Method mix" count={0}><MethodMix counts={{}} /></Panel>
             <Panel title="Recent runs"><RecentRuns runs={[]} /></Panel>
           </aside>
-        </div>
-      </Section>
-
-      <Section title="Landing: project cards + add placeholder">
-        <div className={grid}>
-          {PROJECTS.map((p) => (
-            <ProjectCard key={p.name} href="#" {...p} edit={mockEditProject(p.name)} />
-          ))}
-          <AddCard label="New project">
-            <ActionForm action={mockSave} reset className="flex flex-col gap-3">
-              <ProjectFields />
-              <div className="flex justify-end">
-                <button className="btn">Create</button>
-              </div>
-            </ActionForm>
-          </AddCard>
-        </div>
-        <p className="text-xs text-muted">Empty state: only the placeholder.</p>
-        <div className={grid}>
-          <AddCard label="New project">
-            <p className="text-sm text-muted">(same form)</p>
-          </AddCard>
         </div>
       </Section>
 

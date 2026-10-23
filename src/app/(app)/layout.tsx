@@ -21,9 +21,8 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
         <aside className="flex w-56 shrink-0 flex-col border-r border-line bg-sidebar select-none">
           <div className="drag flex h-11 shrink-0 items-center gap-2 pr-3 pl-[var(--traffic-inset,0.75rem)]">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              {/* eslint-disable-next-line @next/next/no-img-element -- SVG, nothing for next/image to optimise */}
-              <img src="/logo.svg" alt="" className="h-9 w-auto" />
-              <span>
+              <img src="/logo.svg" alt="" className="h-8 w-auto shrink-0" />
+              <span className="whitespace-nowrap">
                 API Bird<sup className="ml-0.5 font-mono text-[9px] font-normal text-subtle"> v{version}</sup>
               </span>
             </Link>
