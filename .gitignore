@@ -10,3 +10,6 @@ npm-debug.log*
 !.env.example
 *.tsbuildinfo
 next-env.d.ts
+
+# electron
+/electron/dist

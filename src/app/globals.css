@@ -1,67 +1,70 @@
 @import "tailwindcss";
 
-/* Tokens mirror local-ai-mcp (AI-Planner) so the two apps read as a family. */
+/* Airmail palette, shared with electron/setup.html: paper, ink, post-office red and blue. */
 :root {
   color-scheme: light dark;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f1f3f6;
-  --border: #e3e6eb;
-  --border-strong: #cfd4dc;
-  --text: #16181d;
-  --muted: #5d6573;
-  --subtle: #8a92a0;
-  --accent: #4f5bd5;
-  --accent-hover: #4350c4;
-  --accent-soft: #eceefc;
-  --accent-text: #3d48b8;
+  --bg: #f6f1e7;
+  --sidebar: #ede5d5;
+  --surface: #fffdf8;
+  --surface-2: #f1eadc;
+  --border: #e2d9c6;
+  --border-strong: #d0c5ae;
+  --text: #1d2433;
+  --muted: #6b6558;
+  --subtle: #9a917f;
+  --accent: #1f4fa3;
+  --accent-hover: #1a438c;
+  --accent-soft: #e2e8f3;
+  --accent-text: #1f4fa3;
   --on-accent: #ffffff;
-  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
-  --shadow-lg: 0 4px 12px rgba(16,24,40,.08);
+  --shadow: 0 1px 0 rgba(60,45,20,.04), 0 1px 3px rgba(60,45,20,.07);
+  --shadow-lg: 0 4px 12px rgba(60,45,20,.1);
 
-  --c-gray: #6b7280;
-  --c-blue: #2f6fde;
-  --c-green: #1a8a4f;
-  --c-amber: #c08a0a;
-  --c-orange: #dd6b20;
-  --c-red: #e03e52;
-  --c-violet: #8250df;
-  --c-cyan: #0d8a9c;
-  --c-indigo: #4f5bd5;
+  --c-gray: #7a7466;
+  --c-blue: #1f4fa3;
+  --c-green: #2f8a4f;
+  --c-amber: #b7860b;
+  --c-orange: #d0661f;
+  --c-red: #d6453d;
+  --c-violet: #7a4fc4;
+  --c-cyan: #13808f;
+  --c-indigo: #3b5bcc;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d0f13;
-    --surface: #15181e;
-    --surface-2: #1c2028;
-    --border: #262b35;
-    --border-strong: #353b48;
-    --text: #e8eaef;
-    --muted: #a1a8b5;
-    --subtle: #6f7787;
-    --accent: #7c86f2;
-    --accent-hover: #929bf5;
-    --accent-soft: #1f2340;
-    --accent-text: #a9b0f8;
-    --on-accent: #0d0f13;
+    --bg: #141a26;
+    --sidebar: #0f141e;
+    --surface: #19202e;
+    --surface-2: #1f2738;
+    --border: #2b3446;
+    --border-strong: #3a4559;
+    --text: #ece6d8;
+    --muted: #8f97a8;
+    --subtle: #687083;
+    --accent: #6c9cf0;
+    --accent-hover: #86aef4;
+    --accent-soft: #1c2a45;
+    --accent-text: #8fb4ff;
+    --on-accent: #0e131c;
     --shadow: 0 1px 2px rgba(0,0,0,.3);
     --shadow-lg: 0 6px 20px rgba(0,0,0,.4);
 
     --c-gray: #9aa2b1;
-    --c-blue: #74a7fb;
-    --c-green: #5cd394;
-    --c-amber: #f1c453;
-    --c-orange: #f59a5b;
-    --c-red: #f7768a;
+    --c-blue: #6c9cf0;
+    --c-green: #5cc98a;
+    --c-amber: #e8bd55;
+    --c-orange: #f0965a;
+    --c-red: #e8625a;
     --c-violet: #b49afa;
-    --c-cyan: #52cfdf;
-    --c-indigo: #8b93f5;
+    --c-cyan: #52c4d4;
+    --c-indigo: #8b9cf5;
   }
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-sidebar: var(--sidebar);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--border);
@@ -72,13 +75,16 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-text: var(--accent-text);
-  --font-sans: var(--font-body), system-ui, sans-serif;
-  --font-display: var(--font-heading), var(--font-body), system-ui, sans-serif;
-  --font-mono: var(--font-code), ui-monospace, monospace;
+  /* System fonts: native-feeling in the desktop shell, nothing to download. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 @layer base {
   *, ::before, ::after { border-color: var(--border); }
+  /* Desktop density: text-sm lands at ~13px. */
+  html { font-size: 15px; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -90,37 +96,42 @@
 }
 
 @utility input {
-  @apply rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-sm text-fg placeholder:text-subtle transition-colors focus:border-accent focus:outline-none;
+  @apply rounded-md border-[1.5px] border-line bg-surface px-2.5 py-1.5 text-sm text-fg placeholder:text-subtle transition-[border-color,box-shadow] focus:border-accent focus:outline-none;
+  &:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
 }
 
 /* Field caption; wrap the control in it so the label stays visible when the field is filled. */
 @utility label {
-  @apply grid gap-1 text-xs font-medium text-muted;
+  @apply grid gap-1 text-[11px] font-bold tracking-[0.1em] text-muted uppercase;
+  & :is(input, select, textarea, button) { @apply text-sm font-normal tracking-normal normal-case; }
 }
 
+/* The setup page's red "Test & save" button: stamp-red with a pressable bottom edge. */
 @utility btn-primary {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
-  color: var(--on-accent);
-  &:hover { background: var(--accent-hover); }
+  @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-white transition-[transform,filter] disabled:opacity-50;
+  background: var(--c-red);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--c-red) 60%, #000);
+  &:hover { filter: brightness(1.07); }
+  &:active { transform: translateY(1px); box-shadow: none; }
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2 disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-1.5 rounded-md border border-line-strong bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2 disabled:opacity-50;
 }
 
 @utility btn-danger {
-  @apply inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
+  @apply inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
   color: var(--c-red);
   border-color: color-mix(in srgb, var(--c-red) 40%, var(--border));
   &:hover { background: color-mix(in srgb, var(--c-red) 10%, transparent); }
 }
 
 @utility btn-icon {
-  @apply inline-flex size-8 items-center justify-center rounded-lg border border-line-strong text-muted transition-colors hover:bg-surface-2 hover:text-fg disabled:opacity-50;
+  @apply inline-flex size-8 items-center justify-center rounded-md border border-line-strong text-muted transition-colors hover:bg-surface-2 hover:text-fg disabled:opacity-50;
 }
 
 @utility card {
-  @apply flex min-h-24 flex-col gap-2 rounded-xl border border-line bg-surface p-4;
+  @apply flex min-h-24 flex-col gap-2 rounded-lg border border-line bg-surface p-4;
   box-shadow: var(--shadow);
 }
 
@@ -139,19 +150,6 @@ select.input {
 }
 select.input option { background: var(--surface); color: var(--text); }
 
-/* landing (ported from local-ai-mcp) */
-.hero-bg {
-  position: absolute; inset: 0 0 auto; height: 520px; pointer-events: none; z-index: -1;
-  background:
-    radial-gradient(600px 300px at 15% 0%, color-mix(in srgb, var(--c-indigo) 22%, transparent), transparent 70%),
-    radial-gradient(500px 280px at 85% 10%, color-mix(in srgb, var(--c-cyan) 16%, transparent), transparent 70%),
-    radial-gradient(circle, color-mix(in srgb, var(--text) 10%, transparent) 1px, transparent 1px) 0 0 / 22px 22px;
-  mask-image: linear-gradient(to bottom, #000 40%, transparent);
-}
-.text-gradient {
-  background: linear-gradient(100deg, var(--c-indigo), var(--c-violet) 45%, var(--c-cyan));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
 .project-card {
   position: relative; overflow: hidden; isolation: isolate;
   transition: border-color .2s, box-shadow .2s, transform .2s;
@@ -167,7 +165,7 @@ select.input option { background: var(--surface); color: var(--text); }
   background: linear-gradient(90deg, transparent, var(--hue), transparent); opacity: 0; transition: opacity .2s;
 }
 .project-card:hover {
-  transform: translateY(-2px); border-color: color-mix(in srgb, var(--hue) 45%, var(--border));
+  border-color: color-mix(in srgb, var(--hue) 45%, var(--border));
   box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--hue) 45%, transparent);
 }
 .project-card:hover::after { opacity: 1; transform: scale(1.15); }
@@ -181,9 +179,25 @@ select.input option { background: var(--surface); color: var(--text); }
   .project-card:hover { transform: none; }
 }
 
-.topbar::after {
-  content: ""; position: absolute; inset: auto 0 -1px; height: 1px; pointer-events: none;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c-indigo) 55%, transparent) 30%, color-mix(in srgb, var(--c-cyan) 45%, transparent) 70%, transparent);
+/* Airmail envelope stripe, as on the setup window's border. */
+.airmail {
+  background: repeating-linear-gradient(-45deg, var(--c-red) 0 14px, var(--bg) 14px 22px, var(--accent) 22px 36px, var(--bg) 36px 44px);
+}
+
+/* Window chrome: drags the frameless Electron window; controls inside stay clickable.
+   --traffic-inset is injected by electron/main.ts on macOS to clear the window buttons. */
+.drag { -webkit-app-region: drag; user-select: none; }
+.drag :is(a, button, input, select) { -webkit-app-region: no-drag; }
+
+/* Dim logo behind the content pane: a near-opaque paper wash over it. The default
+   background-attachment pins it to the pane, so it stays put while content scrolls. */
+.watermark {
+  --wash: color-mix(in srgb, var(--bg) 88%, transparent);
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--wash), var(--wash)), url("/logo.svg");
+  background-repeat: no-repeat;
+  background-position: center, right -4rem bottom -3rem;
+  background-size: auto, 34rem auto;
 }
 
 /* count chip: icon+count, label slides in on hover (ported from local-ai-mcp) */
@@ -208,3 +222,69 @@ select.input option { background: var(--surface); color: var(--text); }
 }
 .status-chip:hover .chip-face { transform: translateY(-100%); opacity: 0; }
 .status-chip:hover .chip-label { transform: none; opacity: 1; letter-spacing: .1em; }
+
+/* Overview stamps: perforated edge cut by a mask (holes along the rim, solid middle); the wrapper's
+   drop-shadow follows the cut edge, which a box-shadow can't. */
+.stamp-wrap { filter: drop-shadow(0 1px 1px rgba(60,45,20,.12)) drop-shadow(0 4px 10px rgba(60,45,20,.08)); }
+.stamp {
+  --r: 4px;
+  padding: calc(2.5 * var(--r));
+  background: var(--surface);
+  mask:
+    radial-gradient(var(--r), #0000 97%, #000) round calc(-1.5 * var(--r)) calc(-1.5 * var(--r)) / calc(3 * var(--r)) calc(3 * var(--r)),
+    linear-gradient(#000 0 0) no-repeat 50% / calc(100% - 3 * var(--r)) calc(100% - 3 * var(--r));
+  transition: transform .3s cubic-bezier(.2,.7,.2,1);
+}
+.stamp-wrap:hover .stamp { transform: rotate(-1.5deg) translateY(-2px); }
+.stamp-face {
+  position: relative; overflow: hidden;
+  display: grid; gap: .6rem; padding: .75rem .85rem;
+  border: 1px solid color-mix(in srgb, var(--hue) 35%, var(--border));
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--hue) 5%, transparent) 6px 7px),
+    linear-gradient(160deg, color-mix(in srgb, var(--hue) 12%, var(--surface)), var(--surface) 70%);
+}
+/* wavy cancellation lines, as a postmark leaves across the corner */
+.stamp-face::after {
+  content: ''; position: absolute; top: .9rem; right: -1.2rem; width: 5.5rem; height: 1.6rem; opacity: .22; pointer-events: none;
+  background: radial-gradient(circle at 50% 120%, transparent 5px, var(--hue) 5.5px 6.5px, transparent 7px) 0 0 / 12px 8px repeat;
+  transform: rotate(-12deg);
+}
+@media (prefers-color-scheme: dark) {
+  .stamp-wrap { filter: drop-shadow(0 2px 6px rgba(0,0,0,.45)); }
+}
+
+/* Inspector pane: a thin title bar over flat content, as in a desktop sidebar or inspector. */
+@utility panel {
+  @apply overflow-hidden rounded-lg border border-line bg-surface;
+  box-shadow: var(--shadow);
+}
+.panel-bar {
+  display: flex; align-items: center; gap: .5rem; height: 2rem; padding: 0 .75rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(var(--surface), color-mix(in srgb, var(--surface-2) 70%, var(--surface)));
+}
+.panel-bar h2 { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* Project list row: zebra, hue bar on the leading edge on hover. */
+.project-row { transition: background-color .15s; }
+.project-row:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+.project-row:hover { background: color-mix(in srgb, var(--hue) 9%, var(--surface)); }
+.project-row::before {
+  content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--hue); transform: scaleY(0); transition: transform .2s;
+}
+.project-row:hover::before { transform: none; }
+.project-row:has(dialog[open]) { background: transparent; }
+
+/* Status code inked as a round postmark; set the hue with --b. */
+.postmark {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 2.35rem; height: 2.35rem; border-radius: 50%;
+  font: 700 11px/1 var(--font-mono); color: var(--b);
+  border: 1.5px solid color-mix(in srgb, var(--b) 70%, transparent);
+  box-shadow: inset 0 0 0 2.5px var(--surface), inset 0 0 0 3.5px color-mix(in srgb, var(--b) 35%, transparent);
+  background: color-mix(in srgb, var(--b) 8%, transparent);
+  transform: rotate(-8deg);
+}

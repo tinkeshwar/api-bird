@@ -16,6 +16,25 @@ const PHRASE: Record<number, string> = {
 const INTENT: Record<string, string> = { GET: "Fetch", POST: "Create", PUT: "Replace", PATCH: "Update", DELETE: "Delete", HEAD: "Probe", OPTIONS: "Options" };
 const MAX = 60;
 
+const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+export function ago(iso: string) {
+  const s = (Date.parse(iso) - Date.now()) / 1000;
+  for (const [unit, n] of [["year", 31536000], ["month", 2592000], ["day", 86400], ["hour", 3600], ["minute", 60]] as const)
+    if (Math.abs(s) >= n) return rtf.format(Math.round(s / n), unit);
+  return "just now";
+}
+
+export const statusHue = (s: number) =>
+  s >= 500
+    ? "red"
+    : s >= 400
+      ? "amber"
+      : s >= 300
+        ? "blue"
+        : s >= 200
+          ? "green"
+          : "gray";
+
 // First sentence of the description, if it is short enough to be a label.
 const sentence = (s?: string) => {
   const t = s?.trim().split(/(?<=[.!?])\s|\n/)[0].replace(/[.!?]$/, "");

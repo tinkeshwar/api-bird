@@ -1,0 +1,241 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" width="100%" height="100%">
+  <defs>
+    <!-- Adaptive Web Styling Embedded directly -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --paper: #f6f1e7; 
+        --ink: #1d2433; 
+        --muted: #6b6558; 
+        --line: #d9d0bd;
+        --red: #d6453d; 
+        --blue: #1f4fa3; 
+        --field: #fffdf8; 
+        --focus: #1f4fa3;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #141a26; 
+          --ink: #ece6d8; 
+          --muted: #8f97a8; 
+          --line: #2b3446;
+          --red: #e8625a; 
+          --blue: #6c9cf0; 
+          --field: #0e131c; 
+          --focus: #8fb4ff;
+        }
+      }
+
+      /* Base Style Overrides mapped to the graphic elements */
+      .bg-canvas { fill: none; } /* Kept completely transparent as requested earlier */
+      .blue-primary { fill: var(--blue); }
+      .blue-stroke { stroke: var(--blue); }
+      .red-primary { fill: var(--red); }
+      .red-stroke { stroke: var(--red); }
+      
+      .ink-dark { fill: var(--ink); }
+      .muted-neutral { fill: var(--muted); }
+      .muted-stroke { stroke: var(--muted); }
+      .line-accent { fill: var(--line); opacity: 0.6; }
+      .line-stroke { stroke: var(--line); }
+      
+      .field-bg { fill: var(--field); }
+      .focus-accent { fill: var(--focus); }
+      .focus-stroke { stroke: var(--focus); }
+    </style>
+
+    <!-- Gradients leveraging the palette for visual depth -->
+    <linearGradient id="birdBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--blue)" />
+      <stop offset="50%" stop-color="var(--focus)" />
+      <stop offset="100%" stop-color="var(--ink)" />
+    </linearGradient>
+
+    <linearGradient id="birdRedGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--red)" />
+      <stop offset="60%" stop-color="var(--muted)" />
+      <stop offset="100%" stop-color="var(--line)" />
+    </linearGradient>
+
+    <linearGradient id="cyberWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--focus)" />
+      <stop offset="70%" stop-color="var(--blue)" />
+      <stop offset="100%" stop-color="var(--ink)" />
+    </linearGradient>
+  </defs>
+
+  <g id="api-bird-graphic">
+    <!-- ==================== TOP WING SYSTEM ==================== -->
+    <!-- Highest Feather -->
+    <path d="M 370 85 C 410 145, 470 200, 545 235 L 515 255 C 455 215, 395 155, 360 100 Z" fill="url(#birdRedGrad)" />
+    
+    <!-- Inner Dark Groove & Track on Highest Feather -->
+    <path d="M 382 120 C 420 165, 465 210, 515 240 L 505 248 C 455 218, 410 172, 375 130 Z" class="field-bg" opacity="0.4" />
+    <circle cx="452" cy="205" r="5" class="focus-accent" />
+    <line x1="455" y1="205" x2="480" y2="225" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Forewing Upper Saber Blade -->
+    <path d="M 245 110 C 290 175, 360 235, 440 268 L 570 345 C 525 350, 480 340, 440 318 L 360 262 C 300 215, 252 160, 235 125 Z" fill="url(#cyberWingGrad)" />
+    
+    <!-- Feather Inset Core and Circuit Track -->
+    <path d="M 268 148 C 310 198, 365 240, 420 268 L 405 280 C 350 250, 298 205, 260 162 Z" class="ink-dark" opacity="0.55" />
+    <circle cx="345" cy="216" r="5.5" class="focus-accent" />
+    <line x1="345" y1="216" x2="385" y2="246" class="focus-stroke" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Third Mid-Wing Blade -->
+    <path d="M 258 210 C 305 260, 362 298, 425 320 L 402 338 C 345 315, 295 278, 248 230 Z" fill="url(#birdBlueGrad)" />
+    <path d="M 276 235 C 315 272, 360 300, 400 316 L 390 326 C 350 310, 310 282, 270 248 Z" class="ink-dark" opacity="0.5" />
+
+    <!-- ==================== UPPER WING &lt; / &gt; CODE BLOCK ==================== -->
+    <g id="upper-code-bracket">
+      <!-- Wing Bracket Background Plate -->
+      <path d="M 405 285 L 505 328 L 472 418 L 372 375 Z" class="field-bg" opacity="0.5" />
+      
+      <!-- Left Chevron: &lt; -->
+      <path d="M 408 305 L 362 344 L 404 380 L 390 392 L 336 344 L 394 294 Z" class="blue-primary" />
+      
+      <!-- Forward Slash: / -->
+      <polygon points="432,295 444,292 416,396 404,399" class="red-primary" />
+      
+      <!-- Right Chevron: &gt; -->
+      <path d="M 436 305 L 482 344 L 440 380 L 454 392 L 508 344 L 450 294 Z" class="blue-primary" />
+    </g>
+
+    <!-- Transition Separator (Petal Feather) -->
+    <path d="M 342 395 C 390 395, 435 410, 475 442 C 440 460, 385 455, 335 428 C 328 412, 332 400, 342 395 Z" fill="url(#birdRedGrad)" />
+
+    <!-- ==================== LOWER BELLY &lt; / &gt; CODE BLOCK ==================== -->
+    <g id="lower-code-bracket">
+      <!-- Body Bracket Background Pocket -->
+      <path d="M 480 398 L 575 425 L 545 520 L 450 490 Z" class="field-bg" opacity="0.45" />
+
+      <!-- Left Chevron: &lt; -->
+      <path d="M 498 402 L 458 440 L 498 478 L 485 490 L 434 440 L 485 390 Z" class="focus-accent" />
+      
+      <!-- Forward Slash: / -->
+      <polygon points="520,392 532,388 506,498 494,502" class="red-primary" />
+      
+      <!-- Right Chevron: &gt; -->
+      <path d="M 522 402 L 562 440 L 522 478 L 535 490 L 586 440 L 535 390 Z" class="focus-accent" />
+    </g>
+
+    <!-- ==================== HEAD, EYE &amp; NECK ==================== -->
+    <!-- Head Crest (Crown Feather) -->
+    <polygon points="568,268 625,268 605,290 550,290" class="focus-accent" />
+
+    <!-- Head and Beak Outer Geometry -->
+    <path d="M 550 290 L 605 290 L 678 335 L 590 368 C 560 385, 545 425, 532 455 L 508 440 C 525 398, 545 355, 575 330 L 535 305 Z" fill="url(#cyberWingGrad)" />
+    
+    <!-- Beak Tip Highlight -->
+    <polygon points="625,302 678,335 595,366 612,334" class="focus-accent" />
+
+    <!-- Cyber Eye with Connected Core -->
+    <g id="cyber-eye">
+      <circle cx="612" cy="334" r="16" class="field-bg" stroke="var(--blue)" stroke-width="4.5" />
+      <circle cx="612" cy="334" r="6.5" class="focus-accent" />
+      <circle cx="612" cy="334" r="3" class="field-bg" />
+      <!-- Radiant Eye Notches -->
+      <line x1="612" y1="310" x2="612" y2="315" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" />
+      <line x1="612" y1="353" x2="612" y2="358" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" />
+      <line x1="588" y1="334" x2="593" y2="334" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" />
+      <line x1="631" y1="334" x2="636" y2="334" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" />
+    </g>
+
+    <!-- Head-to-Throat Circuit Paths -->
+    <path d="M 598 348 L 565 378 L 545 378" fill="none" class="focus-stroke" stroke-width="3" stroke-linecap="round" />
+    <circle cx="545" cy="378" r="4.5" class="focus-accent" />
+
+    <!-- Throat / Breast Lower Contour -->
+    <path d="M 592 368 C 630 422, 608 495, 545 565 C 490 625, 432 645, 385 660 C 440 620, 505 572, 532 505 C 552 455, 565 410, 592 368 Z" fill="url(#birdRedGrad)" />
+
+    <!-- ==================== BODY CIRCUIT BUS PANEL ==================== -->
+    <g id="body-circuit-board">
+      <path d="M 470 478 L 442 508 L 410 508" fill="none" class="focus-stroke" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="410" cy="508" r="4.5" class="focus-accent" />
+
+      <path d="M 505 500 L 480 532 L 440 532 L 415 560" fill="none" class="blue-stroke" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="415" cy="560" r="4" class="focus-accent" />
+
+      <path d="M 520 475 L 500 502 L 472 502" fill="none" class="muted-stroke" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="472" cy="502" r="3.5" class="muted-neutral" />
+
+      <line x1="455" y1="520" x2="470" y2="520" class="focus-stroke" stroke-width="2" stroke-dasharray="3 3" />
+      <line x1="430" y1="545" x2="450" y2="545" class="muted-stroke" stroke-width="2" stroke-dasharray="4 3" />
+    </g>
+
+    <!-- ==================== TAIL FEATHER FAN ==================== -->
+    <!-- Top Tail Feather -->
+    <path d="M 405 515 C 350 560, 290 605, 235 628 C 275 605, 335 558, 385 500 Z" fill="url(#birdBlueGrad)" />
+    
+    <!-- Middle Feather -->
+    <path d="M 420 545 C 380 610, 330 670, 278 705 C 308 668, 358 605, 395 530 Z" fill="url(#cyberWingGrad)" />
+    <path d="M 390 565 L 340 635" fill="none" class="focus-stroke" stroke-width="3" stroke-linecap="round" />
+    <circle cx="340" cy="635" r="5" class="focus-accent" />
+
+    <!-- Bottom Tail Blade -->
+    <path d="M 445 560 C 415 628, 375 700, 322 725 C 345 685, 392 612, 420 540 Z" fill="url(#birdRedGrad)" />
+
+    <!-- ==================== API DATA BUS &amp; TERMINAL NODES ==================== -->
+    <g id="left-emitters">
+      <!-- Upper Track -->
+      <line x1="172" y1="318" x2="228" y2="318" class="focus-stroke" stroke-width="3.5" stroke-linecap="round" />
+      <circle cx="172" cy="318" r="6.5" class="focus-accent" />
+      <circle cx="172" cy="318" r="2.5" class="field-bg" />
+      <circle cx="218" cy="302" r="3.5" class="focus-accent" />
+
+      <!-- Mid Track -->
+      <line x1="192" y1="372" x2="242" y2="372" class="blue-stroke" stroke-width="3" stroke-linecap="round" />
+      <circle cx="192" cy="372" r="5.5" class="blue-primary" />
+      <line x1="182" y1="384" x2="204" y2="384" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 3" />
+
+      <!-- Lower Wing Track -->
+      <line x1="282" y1="442" x2="335" y2="442" class="focus-stroke" stroke-width="3" stroke-linecap="round" />
+      <circle cx="282" cy="442" r="6" class="focus-accent" />
+      <circle cx="282" cy="442" r="2" class="field-bg" />
+
+      <!-- Belly/Tail Track -->
+      <line x1="305" y1="495" x2="368" y2="495" class="muted-stroke" stroke-width="3" stroke-linecap="round" />
+      <circle cx="305" cy="495" r="5" class="muted-neutral" />
+      <line x1="295" y1="506" x2="318" y2="506" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 3" />
+    </g>
+
+    <!-- Top Crown Antenna Trace -->
+    <path d="M 488 215 L 512 215 L 528 238 L 542 238" fill="none" class="focus-stroke" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="488" cy="215" r="4" class="focus-accent" />
+    <line x1="498" y1="205" x2="512" y2="205" class="focus-stroke" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3" />
+
+    <!-- Hanging Data Packet Chips (Under Breast) -->
+    <g id="data-packet-tags">
+      <!-- Tag 1 -->
+      <line x1="472" y1="620" x2="472" y2="655" class="focus-stroke" stroke-width="2" stroke-linecap="round" />
+      <rect x="465" y="655" width="14" height="20" rx="3" class="blue-primary" />
+      <circle cx="472" cy="662" r="2" class="field-bg" />
+
+      <!-- Tag 2 -->
+      <line x1="512" y1="595" x2="512" y2="630" class="red-stroke" stroke-width="2" stroke-linecap="round" />
+      <rect x="505" y="630" width="14" height="20" rx="3" class="red-primary" />
+      <circle cx="512" cy="637" r="2" class="field-bg" />
+    </g>
+
+    <!-- Trailing Payload Particles / Network Dots -->
+    <g id="payload-particles">
+      <!-- Tail Scatter -->
+      <circle cx="218" cy="710" r="5" class="muted-neutral" />
+      <circle cx="248" cy="700" r="3.5" class="focus-accent" />
+      <circle cx="295" cy="750" r="4.5" class="blue-primary" />
+      <circle cx="270" cy="740" r="2.5" class="red-primary" />
+      <line x1="225" y1="685" x2="242" y2="672" class="muted-stroke" stroke-width="2" stroke-linecap="round" />
+
+      <!-- Wing Left Scatter -->
+      <circle cx="160" cy="235" r="4.5" class="blue-primary" />
+      <circle cx="192" cy="285" r="3.5" class="focus-accent" />
+      <circle cx="282" cy="115" r="4" class="muted-neutral" />
+      <circle cx="320" cy="150" r="3.5" class="focus-accent" />
+
+      <!-- Head & Beak Outgoing Packets -->
+      <circle cx="688" cy="355" r="4.5" class="focus-accent" />
+      <circle cx="645" cy="275" r="3.5" class="blue-primary" />
+      <circle cx="550" cy="580" r="3.5" class="red-primary" />
+    </g>
+  </g>
+</svg>

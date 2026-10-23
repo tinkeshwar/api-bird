@@ -3,12 +3,13 @@ import { mockCapture, mockLock, mockRemove, mockRename, mockRun, mockSave, mockU
 import { ActionForm } from "@/components/ActionForm";
 import { AddCard } from "@/components/AddCard";
 import { ProjectCard, ServiceCard } from "@/components/Cards";
-import { PencilIcon, PlusIcon, TrashIcon, UploadIcon } from "@/components/Icons";
+import { PencilIcon, PlayIcon, PlugIcon, PlusIcon, ServerIcon, SlidersIcon, TrashIcon, UploadIcon } from "@/components/Icons";
 import { footer } from "@/components/EditModals";
 import { EndpointList } from "@/components/EndpointList";
 import { EndpointModals, NoEndpoints } from "@/components/EndpointModals";
 import { EndpointWorkbench } from "@/components/EndpointWorkbench";
 import { Modal } from "@/components/Modal";
+import { MethodMix, OverviewHeader, Panel, ProjectTable, RecentRuns, Stamp } from "@/components/Overview";
 import { ProjectFields } from "@/components/ProjectFields";
 import { ServiceFields } from "@/components/ServiceFields";
 import { ServiceHeader } from "@/components/ServiceHeader";
@@ -169,6 +170,41 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
           <button className="btn-icon" aria-label="Disabled" disabled>
             <PencilIcon />
           </button>
+        </div>
+      </Section>
+
+      <Section title="Overview: toolbar, stamps, project list + inspector">
+        <OverviewHeader actions={<button className="btn-primary"><PlusIcon size={16} /> New project</button>} />
+        <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <Stamp label="Projects" value={4} hue="red" Icon={SlidersIcon} note="latest: Billing" />
+          <Stamp label="Services" value={6} hue="indigo" Icon={ServerIcon} note="across 4 projects" />
+          <Stamp label="Endpoints" value={68} hue="cyan" Icon={PlugIcon} note="≈11 per service" />
+          <Stamp label="Saved runs" value={0} hue="green" Icon={PlayIcon} note="nothing sent yet" />
+        </dl>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+          <Panel title="Projects" count={PROJECTS.length}>
+            <ProjectTable rows={PROJECTS.map((p, i) => ({ id: p.name, ...p, createdAt: minsAgo(60 * 24 * (i * 9 + 1)), edit: mockEditProject(p.name) }))} />
+          </Panel>
+          <aside className="space-y-4">
+            <Panel title="Method mix" count={68}>
+              <MethodMix counts={{ GET: 31, POST: 19, PUT: 6, PATCH: 5, DELETE: 5, HEAD: 2 }} />
+            </Panel>
+            <Panel title="Recent runs">
+              <RecentRuns
+                runs={[200, 201, 404, 302, 500].map((status, i) => ({ id: String(i), href: "#", method: ["GET", "POST", "GET", "PATCH", "DELETE"][i], name: ["List invoices", "Create invoice", "Get invoice", "Update invoice", "Delete invoice"][i], where: "Billing › invoices", status, lastRunAt: minsAgo(i * i * 40 + 1) }))}
+              />
+            </Panel>
+          </aside>
+        </div>
+        <p className="text-xs text-muted">Empty states:</p>
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
+          <Panel title="Projects" count={0}>
+            <ProjectTable rows={[]} empty={<><p className="font-medium text-fg">No projects yet</p><button className="btn">New project</button></>} />
+          </Panel>
+          <aside className="space-y-4">
+            <Panel title="Method mix" count={0}><MethodMix counts={{}} /></Panel>
+            <Panel title="Recent runs"><RecentRuns runs={[]} /></Panel>
+          </aside>
         </div>
       </Section>
 

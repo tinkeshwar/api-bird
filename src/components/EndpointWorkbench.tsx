@@ -18,7 +18,7 @@ import { LockIcon, PlayIcon, RestoreIcon, TrashIcon, UnlockIcon } from "@/compon
 import { methodColor } from "@/components/MethodBadge";
 import type { Auth, Capture, KV } from "@/lib/db";
 import { METHODS } from "@/lib/methods";
-import { suggestLabel } from "@/lib/labels";
+import { ago, statusHue, suggestLabel } from "@/lib/labels";
 import { refs, varNameFor } from "@/lib/vars";
 
 type Draft = {
@@ -50,13 +50,6 @@ export type HistoryEntry = {
 };
 
 const fillParams = (o: RunInput) => o.path.replace(PARAM, (m, n?: string) => (n && o.params[n]) || m);
-const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
-function ago(iso: string) {
-  const s = (Date.parse(iso) - Date.now()) / 1000;
-  for (const [unit, n] of [["year", 31536000], ["month", 2592000], ["day", 86400], ["hour", 3600], ["minute", 60]] as const)
-    if (Math.abs(s) >= n) return rtf.format(Math.round(s / n), unit);
-  return "just now";
-}
 const filled = (rows: KV[]) => rows.filter((r) => r.key.trim()).length;
 
 function pretty(body: string) {
@@ -87,16 +80,6 @@ function plainRows(body: string) {
   }
 }
 
-const statusHue = (s: number) =>
-  s >= 500
-    ? "red"
-    : s >= 400
-      ? "amber"
-      : s >= 300
-        ? "blue"
-        : s >= 200
-          ? "green"
-          : "gray";
 // One-line summary of the inherited auth; the Basic password stays masked.
 const authSummary = (a?: Auth) =>
   !a || a.type === "none"
