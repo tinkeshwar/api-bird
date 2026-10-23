@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { NavLink } from "@/components/NavLink";
 import { ProjectIcon } from "@/components/ProjectIcon";
 import { projects } from "@/lib/db";
+import { version } from "../../../package.json";
 
 // Desktop window: airmail stripe, sidebar (window buttons sit in its top row), title bar with crumbs, status bar.
 export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
@@ -22,7 +23,9 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
             <Link href="/" className="flex items-center gap-2 font-semibold">
               {/* eslint-disable-next-line @next/next/no-img-element -- SVG, nothing for next/image to optimise */}
               <img src="/logo.svg" alt="" className="h-9 w-auto" />
-              API Bird
+              <span>
+                API Bird<sup className="ml-0.5 font-mono text-[9px] font-normal text-subtle"> v{version}</sup>
+              </span>
             </Link>
           </div>
           <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
