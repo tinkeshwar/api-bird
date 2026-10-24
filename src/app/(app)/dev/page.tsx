@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { mockCapture, mockLock, mockRemove, mockRename, mockRun, mockSave, mockUncapture } from "@/app/(app)/dev/actions";
 import { ActionForm } from "@/components/ActionForm";
 import { AddCard } from "@/components/AddCard";
+import { BackLink } from "@/components/BackLink";
 import { ServiceCard } from "@/components/Cards";
 import { PencilIcon, PlayIcon, PlugIcon, PlusIcon, ServerIcon, SlidersIcon, TrashIcon, UploadIcon } from "@/components/Icons";
 import { footer } from "@/components/EditModals";
@@ -147,6 +148,16 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
           <select className="input" disabled>
             <option>disabled</option>
           </select>
+        </div>
+      </Section>
+
+      <Section title="Back link (top of main content; hidden on /)">
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          {["/projects/p1", "/projects/p1/services/s1", "/projects/p1/services/s1/endpoints/e1"].map((path) => (
+            <span key={path} className="flex items-center gap-2 font-mono text-xs text-subtle">
+              <BackLink path={path} /> {path}
+            </span>
+          ))}
         </div>
       </Section>
 

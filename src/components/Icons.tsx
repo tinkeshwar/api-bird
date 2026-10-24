@@ -24,3 +24,4 @@ export const UnlockIcon = icon("M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.5-2");
 export const RestoreIcon = icon("M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3");
 export const PlayIcon = icon("M6 4l14 8-14 8z");
 export const ChevronRightIcon = icon("m9 18 6-6-6-6");
+export const ChevronLeftIcon = icon("m15 18-6-6 6-6");

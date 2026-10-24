@@ -5,6 +5,7 @@ import { CloseIcon } from "@/components/Icons";
 
 // Native <dialog>: showModal() gives focus trap, Esc to close and a backdrop for free.
 // A successful ActionForm inside closes it (see ActionForm).
+// The dialog still inherits text styles from where the trigger sits (e.g. a centered empty state), so it resets them.
 export function Modal({
   title,
   trigger,
@@ -28,7 +29,7 @@ export function Modal({
       <dialog
         ref={ref}
         onClick={(e) => e.target === ref.current && ref.current.close()}
-        className="m-auto w-full max-w-lg rounded-2xl border border-line bg-surface text-fg shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+        className="m-auto w-full max-w-lg rounded-2xl border border-line bg-surface text-left text-fg shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
       >
         <div className="space-y-4 p-5">
           <div className="flex items-center justify-between">

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { BackLink } from "@/components/BackLink";
 import { NavLink } from "@/components/NavLink";
 import { ProjectIcon } from "@/components/ProjectIcon";
 import { projects } from "@/lib/db";
 import { version } from "../../../package.json";
 
-// Desktop window: full-width title bar (window buttons + crumbs), airmail stripe, sidebar, status bar.
-export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
+// Desktop window: full-width title bar (window buttons, drag area), airmail stripe, sidebar, status bar.
+export default async function AppLayout({ children }: LayoutProps<"/">) {
   await connection();
   // An unreachable DB still renders the shell (and the no-DB /dev page); the status bar says so.
   const list = await projects()
@@ -16,12 +17,7 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="drag flex h-11 shrink-0 items-center bg-sidebar pr-4 pl-[var(--traffic-inset,1rem)] text-sm">
-        <Link href="/" className="rounded-md px-2 py-1 font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-fg">
-          Projects
-        </Link>
-        {crumb}
-      </header>
+      <header className="drag h-11 shrink-0 bg-sidebar" />
       <div className="airmail h-1 shrink-0" aria-hidden />
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-56 shrink-0 flex-col border-r border-line bg-sidebar select-none">
@@ -48,7 +44,10 @@ export default async function AppLayout({ children, crumb }: LayoutProps<"/">) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <main className="watermark min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-6xl space-y-6 p-6">{children}</div>
+            <div className="mx-auto max-w-6xl space-y-6 p-6">
+              <BackLink />
+              {children}
+            </div>
           </main>
           <footer className="flex h-6 shrink-0 items-center gap-3 border-t border-line bg-sidebar px-3 font-mono text-[11px] text-muted select-none">
             <span className="flex items-center gap-1.5">
