@@ -65,7 +65,7 @@ export default async function Home() {
 
   const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
   const stamps = [
-    { label: "Projects", value: list.length, hue: "red", Icon: SlidersIcon, note: list[0] ? `latest: ${list[0].name}` : "none yet" },
+    { label: "Projects", value: list.length, hue: "red", Icon: SlidersIcon, note: list[0] ? `latest: ${list[0].name}` : "none" },
     { label: "Services", value: svcs.length, hue: "indigo", Icon: ServerIcon, note: `across ${plural(list.length, "project")}` },
     { label: "Endpoints", value: epTotal, hue: "cyan", Icon: PlugIcon, note: svcs.length ? `≈${Math.round(epTotal / svcs.length)} per service` : "import an OpenAPI spec" },
     { label: "Saved runs", value: runCount, hue: "green", Icon: PlayIcon, note: runs[0] ? `last ${runs[0].status}` : "nothing sent yet" },

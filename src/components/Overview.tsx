@@ -8,13 +8,16 @@ type Icon = (p: { size?: number }) => React.ReactNode;
 
 // Overview toolbar: airmail kicker, title, actions on the right.
 export function OverviewHeader({ actions }: { actions?: React.ReactNode }) {
-  const today = new Date().toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  const now = new Date();
+  const today = now.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  const h = now.getHours();
+  const greeting = h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
   return (
     <header className="rise flex flex-wrap items-end gap-4">
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.2em] text-subtle uppercase" suppressHydrationWarning>
           <span className="airmail inline-block h-2 w-6 rounded-sm" aria-hidden />
-          Par avion · {today}
+          {greeting} · {today}
         </p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-fg">Overview</h1>
       </div>

@@ -45,6 +45,7 @@
     "files": [
       "electron/dist/**",
       "electron/setup.html",
+      "public/logo.svg",
       "package.json",
       "!node_modules/{next,@next,react,react-dom,@img,sharp,typescript,@types}{,/**}"
     ],

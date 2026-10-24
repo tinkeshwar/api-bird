@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
                 <span className="truncate">{p.name}</span>
               </NavLink>
             ))}
-            {list?.length === 0 && <p className="px-2 text-xs text-subtle">None yet</p>}
+            {list?.length === 0 && <p className="px-2 text-xs text-subtle">None</p>}
           </nav>
         </aside>
 
@@ -52,7 +52,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <footer className="flex h-6 shrink-0 items-center gap-3 border-t border-line bg-sidebar px-3 font-mono text-[11px] text-muted select-none">
             <span className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full" style={{ background: list ? "var(--c-green)" : "var(--c-red)" }} />
-              {list ? "MongoDB connected" : "MongoDB unreachable"}
+              {list ? "DB connected" : "DB unreachable"}
             </span>
             <span className="ml-auto truncate">MCP {mcp}</span>
           </footer>
