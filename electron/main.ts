@@ -250,7 +250,7 @@ if (!app.requestSingleInstanceLock()) {
     w?.focus();
   });
   app.on("window-all-closed", () => app.quit());
-  app.on("will-quit", () => server?.kill());
+  app.on("will-quit", () => void stopServer());
   app.whenReady().then(async () => {
     buildMenu();
     if (Date.now() - Number(readRaw().lastUpdateCheck ?? 0) > 24 * 3600_000) checkForUpdates(false);
