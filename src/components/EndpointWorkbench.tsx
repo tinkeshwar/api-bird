@@ -19,6 +19,7 @@ import { methodColor } from "@/components/MethodBadge";
 import type { Auth, Capture, KV } from "@/lib/db";
 import { METHODS } from "@/lib/methods";
 import { ago, statusHue, suggestLabel } from "@/lib/labels";
+import { formFields, isMultipart, type FormField } from "@/lib/multipart";
 import { refs, varNameFor } from "@/lib/vars";
 
 type Draft = {
@@ -159,7 +160,7 @@ export function EndpointWorkbench({
   captures?: Capture[];
   history?: HistoryEntry[]; // this endpoint's saved requests, newest run first
   actions?: React.ReactNode;
-  run?: (id: string, o: RunInput) => Promise<RunResult>;
+  run?: (id: string, o: RunInput, files?: FormData) => Promise<RunResult>;
   save?: (prev: Result, fd: FormData) => Promise<Result>;
   capture?: (id: string, c: Capture, value?: string) => Promise<Result>;
   uncapture?: (id: string, name: string) => Promise<Result>;
@@ -183,6 +184,7 @@ export function EndpointWorkbench({
   const [newCap, setNewCap] = useState<Capture>({ var: "", from: "body", path: "" });
   // Short-lived note on one response row: [row key, text, isError].
   const [flash, setFlash] = useState<[string, string, boolean?]>();
+  const [files, setFiles] = useState<Record<string, File>>({}); // multipart file fields, by key; never saved
   const [running, startRun] = useTransition();
   const [saving, startSave] = useTransition();
   const set = (patch: Partial<Draft>) => setD((x) => ({ ...x, ...patch }));
@@ -190,11 +192,16 @@ export function EndpointWorkbench({
   const names = pathParamNames(d.path);
   const dirty = JSON.stringify(d) !== JSON.stringify(savedAs);
   const tab = !hasBody && reqTab === "Body" ? "Params" : reqTab;
+  const multipart = isMultipart(d.headers);
+  const fields = multipart ? formFields(d.body) : [];
+  const setFields = (f: FormField[]) => set({ body: JSON.stringify(f) });
 
   // input given = a history replay; state set by load() hasn't flushed yet, so it's passed directly.
   const send = (input: RunInput = { ...d, params, body: hasBody ? d.body : "" }) =>
     startRun(async () => {
-      const r = await run(id, input);
+      const fd = new FormData();
+      for (const [k, f] of Object.entries(files)) fd.set(k, f);
+      const r = await run(id, input, fd);
       setResult(r);
       // The run was saved (or re-run) as a request: move it to the top of History.
       if ("requestId" in r && r.requestId) {
@@ -606,7 +613,61 @@ export function EndpointWorkbench({
                 {capErr && <p className="text-xs text-[var(--c-red)]">{capErr}</p>}
               </div>
             )}
-            {tab === "Body" && (
+            {tab === "Body" && multipart && (
+              <div className="space-y-1">
+                {fields.map((f, i) => {
+                  const put = (patch: Partial<FormField>) => setFields(fields.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+                  return (
+                    <div key={i} className="flex gap-1">
+                      <input
+                        value={f.key}
+                        placeholder="key"
+                        onChange={(e) => put({ key: e.target.value })}
+                        className="input min-w-0 flex-1 font-mono"
+                      />
+                      <select
+                        value={f.file ? "file" : "text"}
+                        onChange={(e) => put({ file: e.target.value === "file" || undefined, value: "" })}
+                        aria-label="Field type"
+                        className="input w-auto"
+                      >
+                        <option value="text">text</option>
+                        <option value="file">file</option>
+                      </select>
+                      {f.file ? (
+                        <label className="input flex min-w-0 flex-1 cursor-pointer items-center truncate font-mono" title={f.value}>
+                          <input
+                            type="file"
+                            className="sr-only"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setFiles((x) => ({ ...x, [f.key]: file }));
+                              put({ value: file.name });
+                            }}
+                          />
+                          {files[f.key] ? f.value : <span className="text-subtle">{f.value ? `Re-pick ${f.value}` : "Choose file…"}</span>}
+                        </label>
+                      ) : (
+                        <input
+                          value={f.value}
+                          placeholder="value"
+                          onChange={(e) => put({ value: e.target.value })}
+                          className="input min-w-0 flex-1 font-mono"
+                        />
+                      )}
+                      <button type="button" onClick={() => setFields(fields.filter((_, j) => j !== i))} className="btn" aria-label="Remove field">
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+                <button type="button" onClick={() => setFields([...fields, { key: "", value: "" }])} className="btn">
+                  + field
+                </button>
+              </div>
+            )}
+            {tab === "Body" && !multipart && (
               <textarea
                 value={d.body}
                 onChange={(e) => set({ body: e.target.value })}

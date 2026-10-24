@@ -298,6 +298,29 @@ export default async function DevPage({ searchParams }: PageProps<"/dev">) {
             </ActionForm>
           }
         />
+        <p className="text-xs text-muted">multipart/form-data: the Body tab becomes form fields, each text or file. Files are picked per send and never saved.</p>
+        <EndpointWorkbench
+          id="dev-upload"
+          baseUrl="https://invoices.internal:8443/api/v1"
+          initial={{
+            method: "POST",
+            path: "/invoices/{id}/attachments",
+            name: "Upload attachment",
+            description: "",
+            query: [],
+            headers: [{ key: "Content-Type", value: "multipart/form-data" }],
+            body: JSON.stringify([{ key: "note", value: "Signed copy" }, { key: "file", value: "", file: true }]),
+            noAuth: true,
+            skipHeaders: [],
+          }}
+          run={mockRun}
+          save={mockSave}
+          capture={mockCapture}
+          uncapture={mockUncapture}
+          rename={mockRename}
+          lock={mockLock}
+          remove={mockRemove}
+        />
       </Section>
     </>
   );

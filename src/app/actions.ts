@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { type Filter, type ObjectId, type WithId } from "mongodb";
 import { checkEndpoint, endpoints, hasBody, normBasePath, oid, producers, projects, requestHash, requests, serviceUrl, services, type Auth, type Capture, type Endpoint, type EndpointInput, type KV, type RunInput, type Service, type Var } from "@/lib/db";
 import { METHODS, parseOpenApi } from "@/lib/openapi";
+import { formFields, isMultipart } from "@/lib/multipart";
 import { applyAuth, captureValues, fill, refs, VAR_NAME } from "@/lib/vars";
 
 // ponytail: no auth, this is a single-user local tool. Add auth before exposing it on a network,
@@ -387,7 +388,8 @@ const usedRefs = (o: RunInput, auth?: Auth) =>
 // Auto-refresh: an empty or missing var with a producer (an endpoint in the project that captures it) runs that
 // producer first, and a 401 on a request using producer-backed vars runs them once more and retries once.
 // Producers never trigger producers (depth 1), so there are no loops.
-export async function runEndpoint(endpointId: string, o: RunInput): Promise<RunResult> {
+// files: the File for each multipart file field, by field key.
+export async function runEndpoint(endpointId: string, o: RunInput, files?: FormData): Promise<RunResult> {
   const start = performance.now();
   const ms = () => Math.round(performance.now() - start);
   const id = oid(endpointId);
@@ -429,13 +431,13 @@ export async function runEndpoint(endpointId: string, o: RunInput): Promise<RunR
   const used = usedRefs(withPh(o), svc.auth);
   const err = await refresh(used.filter((n) => empty(n) && producerOf(n)));
   if (err) return { error: err, durationMs: ms() };
-  const r = await exec(ep, svc, o, vars, ph);
+  const r = await exec(ep, svc, o, vars, ph, files);
   if ("error" in r || r.status !== 401) return withRefreshed(r);
   const again = used.filter((n) => producerOf(n) && !refreshed.some((x) => x.var === n));
   if (!again.length) return withRefreshed(r);
   const err2 = await refresh(again);
   if (err2) return { error: err2, durationMs: ms() };
-  return withRefreshed(await exec(ep, svc, o, vars, ph));
+  return withRefreshed(await exec(ep, svc, o, vars, ph, files));
 }
 
 // Upserts the run as its endpoint's SavedRequest. A failed save never fails the run.
@@ -455,7 +457,7 @@ async function save(endpointId: ObjectId, input: RunInput, r: { status: number; 
 }
 
 // Fills and sends one request (project headers `ph` added under the endpoint's), saving captures from a 2xx response into the DB and into `vars` (mutated).
-async function exec(ep: WithId<Endpoint>, svc: WithId<Service>, o: RunInput, vars: Record<string, Var>, ph: KV[]): Promise<RunResult> {
+async function exec(ep: WithId<Endpoint>, svc: WithId<Service>, o: RunInput, vars: Record<string, Var>, ph: KV[], files?: FormData): Promise<RunResult> {
   const start = performance.now();
   const ms = () => Math.round(performance.now() - start);
   try {
@@ -474,9 +476,21 @@ async function exec(ep: WithId<Endpoint>, svc: WithId<Service>, o: RunInput, var
     const a = o.noAuth ? undefined : svc.auth;
     const auth = a && (Object.fromEntries(Object.entries(a).map(([k, x]) => [k, k === "type" || k === "in" ? x : v(x)])) as Auth);
     const { headers: own, query } = applyAuth(auth, kvs(o.headers), kvs(o.query));
-    const headers = [...own, ...kvs(sentHeaders(ph, o)).filter(([k]) => !own.some(([h]) => h.toLowerCase() === k.toLowerCase()))];
+    let headers = [...own, ...kvs(sentHeaders(ph, o)).filter(([k]) => !own.some(([h]) => h.toLowerCase() === k.toLowerCase()))];
     const qs = new URLSearchParams(query).toString();
-    const sendBody = hasBody(method) && o.body ? v(o.body) : undefined;
+    let sendBody: string | FormData | undefined = hasBody(method) && o.body ? v(o.body) : undefined;
+    if (sendBody !== undefined && isMultipart(o.headers)) {
+      const form = new FormData();
+      for (const f of formFields(o.body).filter((f) => f.key.trim())) {
+        const file = f.file ? files?.get(f.key) : undefined;
+        if (f.file && !(file instanceof File)) return { error: `Pick a file for form field "${f.key}".`, durationMs: ms() };
+        if (file instanceof File) form.append(v(f.key.trim()), file);
+        else form.append(v(f.key.trim()), v(f.value));
+      }
+      sendBody = form;
+      // fetch writes Content-Type itself, with the boundary.
+      headers = headers.filter(([k]) => k.toLowerCase() !== "content-type");
+    }
     if (missing.length)
       return { error: `{{${missing[0]}}} has no value. Set it in Project variables or capture it from a login response.`, durationMs: ms() };
     const url = `${serviceUrl(svc)}${path}${qs ? `?${qs}` : ""}`;
