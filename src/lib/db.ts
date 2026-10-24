@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
-import { MongoClient, ObjectId, type Db, type WithId } from "mongodb";
+import { join } from "node:path";
+import Datastore from "@seald-io/nedb";
+import { MongoClient, ObjectId, type Collection, type Document, type WithId } from "mongodb";
 import { METHODS } from "./methods.ts";
 
 // Schemas omit _id: the driver adds it on reads (WithId<T>) and generates it on insert.
@@ -119,23 +121,144 @@ export function checkEndpoint(e: EndpointInput) {
   return { method, path, name, headers: rows(e.headers), query: rows(e.query), noAuth: !!e.noAuth, skipHeaders: (e.skipHeaders ?? []).map(String), ...(body && { body }), ...(description && { description }) };
 }
 
-const g = globalThis as unknown as { _db?: Promise<Db> };
+// The part of mongodb's Db the app uses; NeDB mode fills it with the adapter below.
+type Store = { collection<T extends Document>(name: string): Collection<T> };
 
-function connect(): Promise<Db> {
+const g = globalThis as unknown as { _db?: Promise<Store> };
+
+const INDEXES: [string, Record<string, 1>, { unique?: boolean }?][] = [
+  ["services", { projectId: 1 }],
+  ["endpoints", { serviceId: 1, method: 1, path: 1 }, { unique: true }],
+  ["requests", { endpointId: 1, hash: 1 }, { unique: true }],
+];
+
+async function connect(): Promise<Store> {
   const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI is not set");
-  return new MongoClient(uri).connect().then(async (client) => {
-    const db = client.db(); // database name from the URI
-    await db.collection("services").createIndex({ projectId: 1 });
-    await db.collection("endpoints").createIndex({ serviceId: 1, method: 1, path: 1 }, { unique: true });
-    await db.collection("requests").createIndex({ endpointId: 1, hash: 1 }, { unique: true });
-    return db;
-  });
+  const dir = process.env.DATA_DIR;
+  const db: Store = uri ? (await new MongoClient(uri).connect()).db() /* database name from the URI */ : dir ? await nedb(dir) : fail();
+  for (const [name, keys, opts] of INDEXES) await db.collection(name).createIndex(keys, opts);
+  return db;
+}
+
+const fail = (): never => {
+  throw new Error("Set MONGODB_URI (MongoDB) or DATA_DIR (built-in storage)");
+};
+
+// ---------- NeDB adapter: just the Collection calls the app makes ----------
+
+// NeDB stores ids as hex strings; these fields come back as ObjectId so .equals() and oid() work in both modes.
+const ID_FIELDS = ["_id", "projectId", "serviceId", "endpointId"];
+
+type Doc = Record<string, unknown>;
+
+// ObjectIds anywhere (docs, filters, $in lists, update operators) → hex strings.
+const toStore = (v: unknown): any =>
+  v instanceof ObjectId ? v.toHexString()
+  : Array.isArray(v) ? v.map(toStore)
+  : v && typeof v === "object" && !(v instanceof Date) ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, toStore(x)]))
+  : v;
+
+const fromStore = (d: Doc | null) => {
+  if (!d) return null;
+  for (const k of ID_FIELDS) if (typeof d[k] === "string") d[k] = new ObjectId(d[k] as string);
+  return d;
+};
+
+// NeDB's unique error → Mongo's duplicate key code, which isDup checks.
+const dupAware = async <T>(p: Promise<T>) => {
+  try {
+    return await p;
+  } catch (e) {
+    if ((e as { errorType?: string }).errorType === "uniqueViolated") throw Object.assign(new Error((e as Error).message), { code: 11000 });
+    throw e;
+  }
+};
+
+// NeDB has no $setOnInsert: upserts find first, then insert filter + $setOnInsert + other operators, or update with the other operators.
+async function upsert(ds: Datastore, filter: Doc, update: Doc) {
+  const { $setOnInsert, ...rest } = update as { $setOnInsert?: Doc };
+  const found = (await ds.findOneAsync(filter)) as Doc | null;
+  const ops = Object.keys(rest).length ? rest : null;
+  if (found) {
+    if (ops) await dupAware(ds.updateAsync({ _id: found._id }, ops, {}));
+    return { _id: found._id as string, inserted: false };
+  }
+  const _id = new ObjectId().toHexString();
+  await dupAware(ds.insertAsync({ ...filter, ...$setOnInsert, _id }));
+  if (ops) await dupAware(ds.updateAsync({ _id }, ops, {}));
+  return { _id, inserted: true };
+}
+
+function collection(ds: Datastore) {
+  const find = (q: Doc = {}, o?: { projection?: Doc }) => {
+    const c = ds.findAsync(toStore(q), o?.projection ?? {});
+    const cursor = {
+      sort: (s: Doc) => (c.sort(s), cursor),
+      limit: (n: number) => (c.limit(n), cursor),
+      toArray: async () => ((await c) as Doc[]).map(fromStore),
+    };
+    return cursor;
+  };
+  const findOne = async (q: Doc, o?: { projection?: Doc }) => fromStore((await ds.findOneAsync(toStore(q), o?.projection ?? {})) as Doc | null);
+  return {
+    find,
+    findOne,
+    insertOne: async (doc: Doc) => {
+      const d = await dupAware(ds.insertAsync({ ...toStore(doc), _id: new ObjectId().toHexString() }));
+      return { insertedId: new ObjectId(d._id) };
+    },
+    updateOne: async (q: Doc, u: Doc) => ({ matchedCount: (await dupAware(ds.updateAsync(toStore(q), toStore(u), {}))).numAffected }),
+    deleteOne: async (q: Doc) => ({ deletedCount: await ds.removeAsync(toStore(q), {}) }),
+    deleteMany: async (q: Doc) => ({ deletedCount: await ds.removeAsync(toStore(q), { multi: true }) }),
+    countDocuments: (q: Doc = {}) => ds.countAsync(toStore(q)),
+    estimatedDocumentCount: () => ds.countAsync({}),
+    findOneAndDelete: async (q: Doc) => {
+      const d = await findOne(q);
+      if (d) await ds.removeAsync({ _id: toStore(d._id) }, {});
+      return d;
+    },
+    // Only the upsert + returnDocument "after" form is used.
+    findOneAndUpdate: async (q: Doc, u: Doc, o: { upsert?: boolean; projection?: Doc }) => {
+      if (!o.upsert) throw new Error("findOneAndUpdate without upsert is not supported");
+      const { _id } = await upsert(ds, toStore(q), toStore(u));
+      return findOne({ _id }, o);
+    },
+    // Only updateOne+upsert ops are used; NeDB has no batch write, so they run one by one.
+    bulkWrite: async (ops: { updateOne: { filter: Doc; update: Doc; upsert?: boolean } }[]) => {
+      let upsertedCount = 0;
+      for (const { updateOne: op } of ops) {
+        if (!op.upsert) throw new Error("bulkWrite supports only updateOne with upsert");
+        if ((await upsert(ds, toStore(op.filter), toStore(op.update))).inserted) upsertedCount++;
+      }
+      return { upsertedCount };
+    },
+    createIndex: (keys: Doc, o: { unique?: boolean } = {}) => {
+      const f = Object.keys(keys);
+      return ds.ensureIndexAsync({ fieldName: f.length === 1 ? f[0] : f, unique: o.unique });
+    },
+  };
+}
+
+// One datafile per collection: DATA_DIR/<name>.db. A load error (e.g. too many corrupt lines) rejects connect,
+// so the app never starts on empty data.
+async function nedb(dir: string): Promise<Store> {
+  const all: Record<string, ReturnType<typeof collection>> = {};
+  for (const name of ["projects", "services", "endpoints", "requests"]) {
+    const ds = new Datastore({ filename: join(dir, `${name}.db`) });
+    await ds.loadDatabaseAsync();
+    all[name] = collection(ds);
+  }
+  return {
+    collection: <T extends Document>(name: string) => {
+      if (!all[name]) throw new Error(`Unknown collection ${name}`);
+      return all[name] as unknown as Collection<T>;
+    },
+  };
 }
 
 // Cached on globalThis so dev hot reload reuses one connection.
 // A failed connect is dropped so the next request retries.
-function db(): Promise<Db> {
+function db(): Promise<Store> {
   return (g._db ??= connect().catch((e) => {
     g._db = undefined;
     throw e;

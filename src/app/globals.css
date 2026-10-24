@@ -102,7 +102,7 @@
 
 /* Field caption; wrap the control in it so the label stays visible when the field is filled. */
 @utility label {
-  @apply grid gap-1 text-[11px] font-bold tracking-widest text-muted uppercase;
+  @apply grid grid-cols-1 gap-1 text-[11px] font-bold tracking-widest text-muted uppercase;
   & :is(input, select, textarea, button) { @apply text-sm font-normal tracking-normal normal-case; }
 }
 

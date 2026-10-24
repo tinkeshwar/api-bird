@@ -51,6 +51,16 @@
       }
       input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent); }
       input::placeholder { color: var(--muted); opacity: 0.7; }
+      fieldset { border: 0; padding: 0; margin: 0 0 14px; display: flex; gap: 8px; }
+      fieldset label {
+        flex: 1; margin: 0; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 6px;
+        background: var(--field); color: var(--ink); cursor: pointer;
+        font: 600 13px system-ui, sans-serif; letter-spacing: 0; text-transform: none;
+      }
+      fieldset label:has(:checked) { border-color: var(--focus); }
+      fieldset label:has(:focus-visible) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent); }
+      fieldset input { width: auto; margin: 0 6px 0 0; accent-color: var(--focus); }
+      .note { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
       .row { display: flex; gap: 12px; align-items: end; margin-top: 14px; }
       .row > div { width: 110px; }
       button {
@@ -83,13 +93,21 @@
       <header>
         <img class="logo" src="../public/logo.svg" alt="" />
         <div>
-          <h1>Connect API Bird to MongoDB</h1>
-          <p>Where should your requests nest? Point us at a database.</p>
+          <h1>Set up API Bird</h1>
+          <p>Where should your requests nest? Pick a store.</p>
         </div>
       </header>
       <form id="form">
-        <label for="uri">MongoDB URI</label>
-        <input id="uri" required placeholder="mongodb://localhost:27017/api-bird" autofocus spellcheck="false" autocomplete="off" />
+        <fieldset>
+          <legend hidden>Storage</legend>
+          <label><input type="radio" name="driver" value="nedb" checked />Built-in</label>
+          <label><input type="radio" name="driver" value="mongo" />MongoDB</label>
+        </fieldset>
+        <p class="note">Each option keeps its own data; switching doesn't copy anything across.</p>
+        <div id="mongo" hidden>
+          <label for="uri">MongoDB URI</label>
+          <input id="uri" placeholder="mongodb://localhost:27017/api-bird" spellcheck="false" autocomplete="off" />
+        </div>
         <div class="row">
           <div>
             <label for="port">Port</label>
@@ -106,6 +124,15 @@
     <script>
       const q = new URLSearchParams(location.search);
       const $ = (id) => document.getElementById(id);
+      const driver = () => document.querySelector("[name=driver]:checked").value;
+      const sync = () => {
+        const mongo = driver() === "mongo";
+        $("mongo").hidden = !mongo;
+        $("uri").required = mongo;
+      };
+      for (const r of document.getElementsByName("driver")) r.onchange = () => (sync(), r.value === "mongo" && $("uri").focus());
+      if (q.get("driver") === "mongo") document.querySelector("[value=mongo]").checked = true;
+      sync();
       if (q.get("uri")) $("uri").value = q.get("uri");
       if (q.get("port")) $("port").value = q.get("port");
       $("error").textContent = q.get("error") ?? "";
@@ -114,7 +141,7 @@
         $("save").disabled = true;
         $("saveText").textContent = "Testing…";
         $("error").textContent = "";
-        const error = await window.api.testAndSave({ uri: $("uri").value.trim(), port: Number($("port").value) });
+        const error = await window.api.testAndSave({ driver: driver(), uri: $("uri").value.trim(), port: Number($("port").value) });
         $("error").textContent = error ?? "";
         $("save").disabled = false;
         $("saveText").textContent = "Test & save";

@@ -32,7 +32,7 @@ export default async function Home() {
   const [list, svcs, eps, recent, runCount] = await Promise.all([
     (await projects()).find({}, { projection: { vars: 0, headers: 0 } }).sort({ createdAt: -1 }).toArray(),
     (await services()).find({}, { projection: { projectId: 1, name: 1 } }).toArray(),
-    (await endpoints()).aggregate<{ _id: { s: unknown; m: string }; n: number }>([{ $group: { _id: { s: "$serviceId", m: "$method" }, n: { $sum: 1 } } }]).toArray(),
+    (await endpoints()).find({}, { projection: { serviceId: 1, method: 1 } }).toArray(),
     (await requests()).find({}, { projection: { endpointId: 1, status: 1, lastRunAt: 1 } }).sort({ lastRunAt: -1 }).limit(6).toArray(),
     (await requests()).estimatedDocumentCount(),
   ]);
@@ -48,11 +48,11 @@ export default async function Home() {
   const byMethod: Record<string, number> = {};
   for (const s of svcs) svcCount.set(String(s.projectId), (svcCount.get(String(s.projectId)) ?? 0) + 1);
   for (const e of eps) {
-    byMethod[e._id.m] = (byMethod[e._id.m] ?? 0) + e.n;
-    const p = svcOf.get(String(e._id.s))?.projectId;
-    if (p) epCount.set(String(p), (epCount.get(String(p)) ?? 0) + e.n);
+    byMethod[e.method] = (byMethod[e.method] ?? 0) + 1;
+    const p = svcOf.get(String(e.serviceId))?.projectId;
+    if (p) epCount.set(String(p), (epCount.get(String(p)) ?? 0) + 1);
   }
-  const epTotal = eps.reduce((s, e) => s + e.n, 0);
+  const epTotal = eps.length;
 
   // Runs whose endpoint, service or project was deleted drop out.
   const runs = recent.flatMap((r) => {

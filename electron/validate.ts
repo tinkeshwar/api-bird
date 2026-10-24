@@ -18,3 +18,11 @@ export const portFree = (port: number) =>
     const s = net.createServer().once("error", () => resolve(false));
     s.listen(port, "127.0.0.1", () => s.close(() => resolve(true)));
   });
+
+// Numeric semver compare of "1.2.3" style versions; a leading "v" is ignored.
+export function isNewer(tag: string, current: string): boolean {
+  const parse = (v: string) => String(v).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+  const [a, b] = [parse(tag), parse(current)];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) > (b[i] ?? 0);
+  return false;
+}

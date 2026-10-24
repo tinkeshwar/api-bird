@@ -1,5 +1,5 @@
 {
-  "name": "api-bird",
+  "name": "Api Bird",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,13 @@
     "clean": "node -e \"const os=require('os'),path=require('path'),fs=require('fs');const base={darwin:path.join(os.homedir(),'Library/Application Support'),win32:process.env.APPDATA}[process.platform]??(process.env.XDG_CONFIG_HOME||path.join(os.homedir(),'.config'));for(const d of [path.join(base,'api-bird'),'electron/dist']){fs.rmSync(d,{recursive:true,force:true});console.log('removed',d)}\"",
     "start": "next start",
     "test": "node --test src/lib/*.test.ts src/mcp/*.test.ts electron/*.test.ts",
-    "desktop:dev": "npm run build && tsc -p electron && node -e \"require('fs').writeFileSync('electron/dist/package.json','{\\\"type\\\":\\\"commonjs\\\"}')\" && electron ."
+    "desktop:dev": "npm run desktop:compile && electron .",
+    "desktop:compile": "npm run build && tsc -p electron && node -e \"require('fs').writeFileSync('electron/dist/package.json','{\\\"type\\\":\\\"commonjs\\\"}')\"",
+    "desktop:build": "npm run desktop:compile && electron-builder"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "@seald-io/nedb": "^4.1.2",
     "mongodb": "^7.7.0",
     "next": "16.4.3",
     "react": "19.3.1",
@@ -27,8 +30,56 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
     "tailwindcss": "^4",
     "typescript": "^7"
   },
-  "main": "electron/dist/main.js"
+  "main": "electron/dist/main.js",
+  "build": {
+    "appId": "in.tinkeshwar.api-bird",
+    "productName": "API Bird",
+    "icon": "electron/icon.png",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/dist/**",
+      "electron/setup.html",
+      "package.json",
+      "!node_modules/{next,@next,react,react-dom,@img,sharp,typescript,@types}{,/**}"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "server"
+      },
+      {
+        "from": ".next/standalone/node_modules",
+        "to": "server/node_modules",
+        "filter": [
+          "**/*",
+          "!{sharp,@img}{,/**}"
+        ]
+      }
+    ],
+    "mac": {
+      "target": {
+        "target": "dmg",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
+      "identity": null,
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    }
+  }
 }

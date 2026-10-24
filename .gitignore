@@ -13,3 +13,4 @@ next-env.d.ts
 
 # electron
 /electron/dist
+/release

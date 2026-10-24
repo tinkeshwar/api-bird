@@ -14,17 +14,15 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[id]"
   const project = id && (await (await projects()).findOne({ _id: id }));
   if (!project) notFound();
   const list = await (await services()).find({ projectId: project._id }).sort({ createdAt: 1 }).toArray();
-  const counts = await (await endpoints())
-    .aggregate<{ _id: { s: unknown; m: string }; n: number }>([
-      { $match: { serviceId: { $in: list.map((s) => s._id) } } },
-      { $group: { _id: { s: "$serviceId", m: "$method" }, n: { $sum: 1 } } },
-    ])
+  const eps = await (await endpoints())
+    .find({ serviceId: { $in: list.map((s) => s._id) } }, { projection: { serviceId: 1, method: 1 } })
     .toArray();
   // service id → { method: count }, keys in METHODS order so every card lists them the same way.
   const byMethod = new Map<string, Record<string, number>>();
-  for (const c of counts.sort((a, b) => METHODS.indexOf(a._id.m) - METHODS.indexOf(b._id.m))) {
-    const k = String(c._id.s);
-    byMethod.set(k, { ...byMethod.get(k), [c._id.m]: c.n });
+  for (const e of eps.sort((a, b) => METHODS.indexOf(a.method) - METHODS.indexOf(b.method))) {
+    const m = byMethod.get(String(e.serviceId)) ?? {};
+    m[e.method] = (m[e.method] ?? 0) + 1;
+    byMethod.set(String(e.serviceId), m);
   }
   const pid = String(project._id);
   const prods = await producers(project._id);

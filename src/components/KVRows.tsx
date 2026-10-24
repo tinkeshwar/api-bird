@@ -21,14 +21,14 @@ export function KVRows({ name, initial = [], onChange }: { name: string; initial
             value={r.key}
             placeholder="key"
             onChange={(e) => set(rows.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))}
-            className="input flex-1 font-mono"
+            className="input min-w-0 flex-1 font-mono"
           />
           <input
             name={`${name}.value`}
             value={r.value}
             placeholder="value"
             onChange={(e) => set(rows.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
-            className="input flex-1 font-mono"
+            className="input min-w-0 flex-1 font-mono"
           />
           <button type="button" onClick={() => set(rows.filter((_, j) => j !== i))} className="btn" aria-label="Remove row">
             ×

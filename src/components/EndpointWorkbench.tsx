@@ -475,7 +475,7 @@ export function EndpointWorkbench({
                             }
                             placeholder="value"
                             aria-label={n}
-                            className="input flex-1 font-mono"
+                            className="input min-w-0 flex-1 font-mono"
                           />
                         </div>
                       ))}

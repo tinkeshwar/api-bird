@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import net from "node:net";
-import { portError, portFree, uriError } from "./validate.ts";
+import { isNewer, portError, portFree, uriError } from "./validate.ts";
 
 test("uriError", () => {
   assert.equal(uriError("mongodb://localhost:27017/api-bird"), null);
@@ -31,4 +31,12 @@ test("portFree", async () => {
   assert.equal(await portFree(port), false);
   await new Promise((r) => s.close(r));
   assert.equal(await portFree(port), true);
+});
+
+test("isNewer", () => {
+  assert.equal(isNewer("0.1.10", "0.1.9"), true);
+  assert.equal(isNewer("v0.1.10", "0.1.9"), true);
+  assert.equal(isNewer("v1.0.0", "1.0.0"), false);
+  assert.equal(isNewer("0.1.9", "0.1.10"), false);
+  assert.equal(isNewer("1.1", "1.0.9"), true);
 });

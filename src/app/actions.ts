@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { MongoServerError, type Filter, type ObjectId, type WithId } from "mongodb";
+import { type Filter, type ObjectId, type WithId } from "mongodb";
 import { checkEndpoint, endpoints, hasBody, normBasePath, oid, producers, projects, requestHash, requests, serviceUrl, services, type Auth, type Capture, type Endpoint, type EndpointInput, type KV, type RunInput, type Service, type Var } from "@/lib/db";
 import { METHODS, parseOpenApi } from "@/lib/openapi";
 import { applyAuth, captureValues, fill, refs, VAR_NAME } from "@/lib/vars";
@@ -239,7 +239,7 @@ const readEndpoint = (fd: FormData): EndpointInput => ({
   skipHeaders: fd.getAll("skipHeaders").map(String),
 });
 
-const isDup = (e: unknown) => e instanceof MongoServerError && e.code === 11000;
+const isDup = (e: unknown) => (e as { code?: unknown })?.code === 11000;
 const DUP = "An endpoint with this method and path already exists in this service";
 
 export async function createEndpoint(_: Result, fd: FormData): Promise<Result> {
