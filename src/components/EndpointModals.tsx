@@ -1,4 +1,4 @@
-import { createEndpoint, importOpenApi, type Result } from "@/app/actions";
+import { createEndpoint, importCurl, importOpenApi, type Result } from "@/app/actions";
 import { ActionForm } from "@/components/ActionForm";
 import { footer } from "@/components/EditModals";
 import { PlusIcon, UploadIcon } from "@/components/Icons";
@@ -8,10 +8,37 @@ import { METHODS } from "@/lib/methods";
 
 type Action = (prev: Result, fd: FormData) => Promise<Result>;
 
-// Import + New endpoint, labelled: adding an endpoint is the page's primary action. /dev passes mock actions.
-export function EndpointModals({ serviceId, create = createEndpoint, importSpec = importOpenApi }: { serviceId: string; create?: Action; importSpec?: Action }) {
+// Import + From cURL + New endpoint, labelled: adding an endpoint is the page's primary action. /dev passes mock actions.
+export function EndpointModals({
+  serviceId,
+  create = createEndpoint,
+  importSpec = importOpenApi,
+  fromCurl = importCurl,
+}: {
+  serviceId: string;
+  create?: Action;
+  importSpec?: Action;
+  fromCurl?: Action;
+}) {
   return (
     <>
+      <Modal title="Endpoint from cURL" trigger={<><PlusIcon /> cURL</>}>
+        <ActionForm action={fromCurl} reset className="flex flex-col gap-4">
+          <input type="hidden" name="serviceId" value={serviceId} />
+          <label className="label">
+            cURL command
+            <textarea name="curl" required rows={8} placeholder={"curl -X POST 'http://localhost:5001/api/auth/login' \\\n  -H 'Content-Type: application/json' \\\n  -d '{ \"username\": \"johndoe\" }'"} className="input w-full font-mono" />
+            <span className="text-xs text-muted">Host is ignored; the service base path is stripped from the URL.</span>
+          </label>
+          <label className="label">
+            Name (optional)
+            <input name="name" placeholder="Defaults to METHOD /path" className="input w-full" />
+          </label>
+          <div className={`${footer} justify-end`}>
+            <button className="btn-primary">Create endpoint</button>
+          </div>
+        </ActionForm>
+      </Modal>
       <Modal title="Import OpenAPI" trigger={<><UploadIcon /> Import</>}>
         <ActionForm action={importSpec} reset className="flex flex-col gap-4">
           <input type="hidden" name="serviceId" value={serviceId} />

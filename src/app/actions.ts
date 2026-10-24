@@ -6,6 +6,7 @@ import { type Filter, type ObjectId, type WithId } from "mongodb";
 import { checkEndpoint, endpoints, hasBody, normBasePath, oid, producers, projects, requestHash, requests, serviceUrl, services, type Auth, type Capture, type Endpoint, type EndpointInput, type KV, type RunInput, type Service, type Var } from "@/lib/db";
 import { METHODS, parseOpenApi } from "@/lib/openapi";
 import { formFields, isMultipart } from "@/lib/multipart";
+import { parseCurl } from "@/lib/curl";
 import { applyAuth, captureValues, fill, refs, VAR_NAME } from "@/lib/vars";
 
 // ponytail: no auth, this is a single-user local tool. Add auth before exposing it on a network,
@@ -255,6 +256,18 @@ export async function importOpenApi(_: Result, fd: FormData): Promise<Result> {
   const f = fd.get("file");
   if (!(f instanceof File) || f.size === 0) return fail("Choose a .yml, .yaml or .json file");
   return importSpec(str(fd, "serviceId"), await f.text());
+}
+
+export async function importCurl(_: Result, fd: FormData): Promise<Result> {
+  const svc = await (await services()).findOne({ _id: oid(str(fd, "serviceId")) ?? undefined });
+  if (!svc) return fail("Service not found");
+  let e;
+  try {
+    e = parseCurl(String(fd.get("curl") ?? ""), svc.basePath);
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Could not parse curl command");
+  }
+  return addEndpoint(String(svc._id), { ...e, name: str(fd, "name") || e.name });
 }
 
 // Plain-object versions of the actions above, shared with the MCP tools.

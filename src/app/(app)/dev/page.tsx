@@ -104,7 +104,7 @@ const ENDPOINTS_V2 = [
 ];
 const V2_COUNTS = Object.fromEntries(Object.entries(Object.groupBy(ENDPOINTS_V2, (e) => e.method)).map(([m, l]) => [m, l!.length]));
 
-const v2Create = <EndpointModals serviceId="dev" create={mockSave} importSpec={mockSave} />;
+const v2Create = <EndpointModals serviceId="dev" create={mockSave} importSpec={mockSave} fromCurl={mockSave} />;
 const v2Actions = (
   <>
     {mockEditService("invoices-v2", "https://invoices.internal:8443")}
