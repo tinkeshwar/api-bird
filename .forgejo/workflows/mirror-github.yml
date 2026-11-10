@@ -24,7 +24,6 @@ jobs:
       - name: Push to GitHub
         env:
           GH_TOKEN: ${{ secrets.GH_MIRROR_TOKEN }}
-        # tags in a separate push: GitHub may skip the tag event when it arrives alongside the branch
         run: |
           url="https://x-access-token:${GH_TOKEN}@github.com/tinkeshwar/api-bird.git"
           git push --force "$url" "HEAD:${{ github.ref }}"
