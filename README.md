@@ -9,6 +9,12 @@ A local API workbench. Organise APIs as **projects → services → endpoints**,
 
 Built with Next.js 16, React 19, Tailwind 4, and MongoDB.
 
+![Overview](docs/screenshots/overview.png)
+
+| Project variables & services | Service endpoints | Endpoint runner |
+| --- | --- | --- |
+| ![Project](docs/screenshots/project.png) | ![Service](docs/screenshots/service.png) | ![Endpoint](docs/screenshots/endpoint.png) |
+
 ## Setup
 
 Requires Node 20+ and a running MongoDB.
@@ -51,12 +57,9 @@ The app serves on `127.0.0.1:3940` by default (changeable in setup). The MCP URL
 
 ### Releasing
 
-There's no CI. Build each installer on its own OS:
+Merging to `main` on Forgejo bumps the version and tags it (`commit-and-tag-version`), then mirrors to GitHub. The `v*` tag triggers [release.yml](.github/workflows/release.yml), which tests, builds the `.dmg` (macOS) and `.exe` (Windows) installers, and attaches them to a **draft** GitHub release. Review it and publish.
 
-1. Bump `version` in `package.json`.
-2. `npm run desktop:build` on a Mac → `release/API Bird-X.Y.Z-arm64.dmg` and `release/API Bird-X.Y.Z.dmg` (Intel).
-3. `npm run desktop:build` on Windows → `release/API Bird Setup X.Y.Z.exe`.
-4. On [releases](https://git.tinkeshwar.in/HomeServer/api-bird/releases), create a `vX.Y.Z` release and attach the `.dmg` and `.exe` files.
+To build locally instead: `npm run desktop:build` on each OS → installers in `release/`.
 
 ## Scripts
 
